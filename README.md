@@ -1,36 +1,48 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# LMS Frontend
 
-## Getting Started
+Next.js App Router frontend for the LMS. The frontend calls the NestJS API Gateway,
+not the individual internal services.
 
-First, run the development server:
+## Local development
+
+Create `.env.local` from `.env.example`, then run:
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The frontend runs at `http://localhost:5173`; the API Gateway defaults to
+`http://localhost:3000`. The Gateway CORS allowlist must include the frontend
+origin (`http://localhost:5173`).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## API client
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+UI components should call a domain function from `src/services/*.service.ts`.
+The service layer handles the API call, auth token requirement, and response
+unwrapping; components do not need to know HTTP methods or URL paths. For
+example:
 
-## Learn More
+```ts
+import { courseService } from "@/services/course.service";
 
-To learn more about Next.js, take a look at the following resources:
+const courses = await courseService.listCourses({ page: 1, limit: 12 });
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Feature API modules under `src/features/*/api.ts` define the Gateway method and
+path directly in the frontend repository. The frontend does not read the
+backend repository or generate its route definitions from backend files.
+Protected APIs require an access token from the caller; Gateway errors are
+surfaced as `ApiClientError`. Keep these frontend API definitions aligned with
+the Gateway contract when either project changes.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Quiz API routes are not currently exposed by the Gateway. Do not call the
+internal Quiz service directly from the frontend.
 
-## Deploy on Vercel
+## Checks
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+npm run lint
+npm test
+npm run build
+```
