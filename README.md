@@ -59,3 +59,15 @@ GitHub Actions runs lint, formatting checks, and the full existing Vitest suite
 as independent jobs on every push and pull request. The workflow can also be
 started manually. Tests use mocked API requests and do not require a running
 backend or secrets. The build command remains a separate local check.
+
+## Git hooks
+
+`npm install` or `npm ci` installs Husky hooks automatically through the
+`prepare` script. After pulling this setup into an existing checkout, run
+`npm run prepare` once to enable hooks without reinstalling dependencies.
+
+- Before each commit, lint-staged runs ESLint fixes and Prettier on staged files.
+  Fixes are included in the commit; remaining lint errors block it.
+- Before each push, Husky runs the full Vitest suite and blocks the push on failure.
+
+GitHub Actions disables local hooks with `HUSKY=0` and runs its independent checks.
