@@ -132,7 +132,11 @@ describe("Gateway API client", () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
-  it("sends admin feature requests with their method, body, and token", async () => {
+  it("sends browser admin requests through the cookie proxy without exposing a token", async () => {
+    vi.stubGlobal("window", {
+      location: { origin: "http://frontend.test" },
+      dispatchEvent: vi.fn(),
+    });
     fetchMock.mockResolvedValueOnce(
       new Response(JSON.stringify({ data: { status: "ACTIVE" } }), {
         status: 200,
@@ -140,18 +144,20 @@ describe("Gateway API client", () => {
       }),
     );
 
-    await adminUsersApi.updateStatus("admin-token", "user-1", {
+    await adminUsersApi.updateStatus("user-1", {
       status: "ACTIVE",
       expectedVersion: 2,
     });
 
     expect(fetchMock).toHaveBeenCalledWith(
-      new URL("http://gateway.test/api/v1/admin/users/user-1/status"),
+      new URL("http://frontend.test/api/gateway/admin/users/user-1/status"),
       expect.objectContaining({
         method: "PATCH",
         body: JSON.stringify({ status: "ACTIVE", expectedVersion: 2 }),
       }),
     );
+    const headers = fetchMock.mock.calls[0][1]?.headers as Headers;
+    expect(headers.has("Authorization")).toBe(false);
   });
 
   it("rejects internal or non-versioned paths", () => {

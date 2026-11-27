@@ -14,6 +14,14 @@ Tài liệu chia việc cho **4 thành viên, mỗi người phụ trách một 
 
 Nhóm dùng **Next.js + NestJS**, tương ứng kiến trúc C trong đề. Frontend gọi Gateway; backend lưu dữ liệu, kiểm tra quyền và chấm quiz.
 
+### Chạy phần đăng nhập
+
+- Sao chép `.env.example` thành `.env.local`, đặt `API_GATEWAY_URL` trỏ tới Gateway đang chạy. Browser gọi `/api/auth/*` và `/api/gateway/*` của Next.js; Next.js mới gửi Bearer token tới backend.
+- Access token và refresh token nằm trong cookie HttpOnly. Không đưa token vào Zustand, localStorage hoặc props gửi xuống browser. Component dùng `useAuth()`; Server Component dùng `requireUser()` trước khi đọc dữ liệu riêng.
+- Bản hiện tại dùng bộ nhớ của **một Node process** để gộp refresh và chặn phiên đã logout. Production phải đặt `AUTH_SESSION_MODE=single-instance`, chạy một process lâu dài bằng `next start` và HTTPS. Không dùng cấu hình này cho serverless, nhiều replica, nhiều worker hoặc PM2 cluster. Cần bộ phối hợp dùng chung trước khi triển khai theo các cách đó; chưa có Redis coordinator trong bản này. Thiếu cấu hình production thì API phiên trả 503.
+- Logout chờ refresh đang chạy rồi thu hồi token mới nhất ở backend. Nếu backend không liên lạc được, browser vẫn được xóa cookie và hiển thị lỗi thu hồi phiên. Access JWT đã được sao chép ra ngoài vẫn tuân theo thời hạn và quy tắc thu hồi của backend; frontend không thay đổi quy tắc đó.
+- Body đăng nhập tối đa **16 KiB**, body qua proxy tối đa **2 MiB**, tính cả khi không có `Content-Length`. File lớn cần route upload riêng hoặc upload trực tiếp theo API backend. Giới hạn thêm connection, thời gian đọc và số request ở reverse proxy khi deploy.
+
 Hiện frontend có khung trang và các hàm gọi API. Các thành viên triển khai màn hình theo phần việc bên dưới; phần Quiz dùng kiểu dữ liệu và API trong contract của backend.
 
 ## 2. Chia việc theo nhánh
@@ -164,9 +172,9 @@ src/features/courses/
 
 ### Thứ tự làm
 
-1. **Sửa login/refresh trước:** frontend đọc session trực tiếp nhưng backend bọc trong `{ data, meta }` bằng [EnvelopeInterceptor](https://github.com/maibui7879/lms-backend/blob/main/services/identity-service/src/common/interceptors/envelope.interceptor.ts). Sửa response type thành `ApiResponse<AuthSession>`, lấy `.data` trước khi lưu store; test với đúng dạng response này.
+1. Login/refresh đã đọc `{ data, meta }` ở Route Handler Next.js. Token được đặt vào cookie HttpOnly; frontend chỉ nhận `{ user }`. TV1 tiếp tục đăng ký/OTP/quên mật khẩu trên nền phiên này, không đưa token trở lại store hoặc storage.
 2. Làm đăng nhập → đăng ký/OTP → quên mật khẩu. Dùng React Hook Form/Zod; hiển thị lỗi backend, khóa nút khi đang gửi. Validation theo DTO thực tế, không tự đoán độ dài mật khẩu.
-3. Làm phiên để server kiểm tra được bằng cookie/session phù hợp; chặn route bằng `proxy.ts` của Next.js hiện tại, kiểm tra lại khi tải dữ liệu. Store hiện mất khi reload, chưa đủ bảo vệ route. Backend vẫn kiểm tra JWT/role/quyền sở hữu; không chỉ ẩn nút ở UI.
+3. Phiên đã có AuthProvider khôi phục khi reload, proxy chặn truy cập khi thiếu cookie và requireUser kiểm tra user/role qua Identity ở server. Khi thêm trang riêng, gọi requireUser và kiểm tra quyền tại API backend; sidebar chỉ điều khiển hiển thị. Trang khám phá vẫn công khai.
 4. Làm hồ sơ, yêu cầu giảng viên và Admin duyệt/đổi role/khóa tài khoản. Tự đăng ký chỉ tạo học viên. Logout phải xóa phiên/cache cả khi request backend thất bại; refresh bị từ chối thì yêu cầu login lại.
 5. Làm header/sidebar theo ảnh, menu dựa vào quyền thật, thu gọn trên điện thoại. Các nhãn Student/Admin/Teacher không được tự cấp quyền cho tài khoản.
 6. Tạo QueryClientProvider, ThemeContext và UI chung. Thống nhất props với nhóm. Thêm `usePaginatedQuery<TItem>` cho danh sách API có phân trang; giữ [useDebounce<T>](./src/hooks/use-debounce.ts) làm hook generic thứ nhất. Cả hai cần test.
@@ -353,7 +361,19 @@ Stage file của việc vừa làm, commit theo tính năng, push nhánh mình v
 
 Trước gửi PR: đủ màn được giao, dùng được trên điện thoại, có loading/rỗng/lỗi, API kiểm tra quyền thật, checks pass. Ghi rõ màn chưa nối backend; không ghi hoàn thành khi mới dùng mock.
 
-## 11. Chuẩn bị nộp bài
+## 11. Phiên đăng nhập đang dùng
+
+- [AuthProvider](./src/components/auth/auth-provider.tsx) bọc ứng dụng; dùng `useAuth()` để lấy user, trạng thái đang kiểm tra phiên, login/logout và tải lại phiên.
+- [Auth store](./src/store/auth-store.ts) chỉ giữ user trong bộ nhớ; không có access/refresh token và không persist vào localStorage/sessionStorage. Reload được khôi phục từ cookie qua server.
+- [Auth Route Handler](./src/app/api/auth/[action]/route.ts) nhận login/session/refresh/logout. Cookie HttpOnly, SameSite=Lax, Secure trong production; response không chứa token. Request thay đổi dữ liệu phải cùng origin.
+- [Gateway Route Handler](./src/app/api/gateway/[...path]/route.ts) đọc cookie, gửi Bearer tới `API_GATEWAY_URL`. API client trình duyệt tự dùng tuyến này; các service Course/Learning/Users/Notification không còn tham số accessToken. Ví dụ: `courseService.createCourse(input)` và `courseService.getCourseOutline(courseId)`.
+- Ở Server Component, gọi [requireUser](./src/lib/require-user.ts) trước khi đọc dữ liệu riêng, rồi dùng [serverApiRequest](./src/lib/server-api.ts). Helper chỉ gửi token ở server, không trả token cho component trình duyệt. Route Handler nghiệp vụ mới cũng phải kiểm tra phiên/quyền tương ứng.
+- [Proxy](./src/proxy.ts) chỉ kiểm tra cookie để điều hướng sớm. User và role được xác minh lại qua Identity trong server page. Backend quyết định quyền sở hữu và ghi danh.
+- Access hết hạn: Route Handler refresh và gửi lại request một lần khi nhận 401. Refresh bị từ chối thì xóa cookie/phiên và yêu cầu login; lỗi kết nối tạm thời không tự xóa phiên. Logout luôn xóa cookie local; nếu thu hồi ở backend lỗi, giao diện báo rõ.
+- Refresh đồng thời được gộp trong một process Next.js. Khi triển khai nhiều instance cần cơ chế phối hợp dùng chung để tránh dùng lại refresh token đã rotate. OAuth callback chưa nối với luồng cookie này.
+- Các test phiên dùng Gateway/Identity giả lập; cần chạy lại bằng tài khoản backend thật trước khi nghiệm thu tích hợp.
+
+## 12. Chuẩn bị nộp bài
 
 - Repo theo tên `<MãNhóm>_LTWNC_CuoiKy` hoặc thống nhất đường dẫn nộp với giảng viên; README có cách chạy, tài khoản demo từng role, lệnh seed thật. Demo/seed hiện cần bổ sung sau khi kiểm chứng.
 - Báo cáo PDF tối đa **20 trang nội dung**: bảng quyền, cách render từng trang, lý do chọn state/pattern, ảnh UI, hiệu năng trước/sau, test/coverage, việc và % đóng góp từng người.

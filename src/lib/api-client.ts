@@ -61,6 +61,9 @@ function isStringArray(value: unknown): value is string[] {
 
 function getApiBaseUrl(): string {
   return (
+    (typeof window === "undefined" ? process.env.API_GATEWAY_URL : undefined)
+      ?.trim()
+      .replace(/\/+$/, "") ||
     process.env.NEXT_PUBLIC_API_URL?.trim().replace(/\/+$/, "") ||
     "http://localhost:3000"
   );
@@ -175,14 +178,21 @@ export async function apiRequest<TResponse = unknown, TBody = unknown>(
   path: string,
   options: ApiRequestOptions<TBody> = {},
 ): Promise<TResponse> {
-  const url = buildApiUrl(path, options.query);
+  const gatewayUrl = buildApiUrl(path, options.query);
+  const browser = typeof window !== "undefined";
+  const url = browser
+    ? new URL(
+        `/api/gateway${gatewayUrl.pathname.slice("/api/v1".length)}${gatewayUrl.search}`,
+        window.location.origin,
+      )
+    : gatewayUrl;
   const headers = new Headers(options.headers);
   const responseType = options.responseType ?? "json";
 
   if (!headers.has("Accept")) {
     headers.set("Accept", responseType === "blob" ? "*/*" : "application/json");
   }
-  if (options.accessToken) {
+  if (options.accessToken && !browser) {
     headers.set("Authorization", `Bearer ${options.accessToken}`);
   }
   if (options.idempotencyKey) {
@@ -198,6 +208,7 @@ export async function apiRequest<TResponse = unknown, TBody = unknown>(
   }
 
   const response = await fetch(url, {
+    credentials: browser ? "same-origin" : undefined,
     method: options.method ?? "GET",
     headers,
     body,
@@ -210,6 +221,8 @@ export async function apiRequest<TResponse = unknown, TBody = unknown>(
   );
 
   if (!response.ok) {
+    if (browser && response.status === 401)
+      window.dispatchEvent(new Event("lms:unauthorized"));
     const error = errorRecord(payload);
     const message = Array.isArray(error.message)
       ? error.message.join(", ")
@@ -239,9 +252,9 @@ export async function apiRequest<TResponse = unknown, TBody = unknown>(
 
 export function authenticatedApiRequest<TResponse = unknown, TBody = unknown>(
   path: string,
-  options: ApiRequestOptions<TBody> & { accessToken: string },
+  options: ApiRequestOptions<TBody> = {},
 ): Promise<TResponse> {
-  if (!options.accessToken) {
+  if (typeof window === "undefined" && !options.accessToken) {
     throw new ApiClientError(
       "An access token is required for this API request",
       401,

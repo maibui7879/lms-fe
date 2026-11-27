@@ -2,7 +2,7 @@
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { authApi } from "@/features/auth/api";
-import type { AuthSession } from "@/lib/types";
+import type { ClientSession } from "@/lib/types";
 import { useAuthStore } from "@/store/auth-store";
 import { authService } from "./auth.service";
 
@@ -13,12 +13,7 @@ vi.mock("@/features/auth/api", () => ({
   },
 }));
 
-const session: AuthSession = {
-  accessToken: "access-token",
-  refreshToken: "refresh-token",
-  tokenType: "Bearer",
-  expiresIn: 900,
-  refreshExpiresAt: "2026-12-01T00:00:00.000Z",
+const session: ClientSession = {
   user: {
     id: "user-1",
     email: "student@example.test",

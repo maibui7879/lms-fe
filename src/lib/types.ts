@@ -10,6 +10,7 @@ export interface ApiResponse<T> {
 export interface AuthUser {
   id: string;
   email: string;
+  displayName?: string;
   role: UserRole;
   status?: "ACTIVE" | "INACTIVE";
 }
@@ -97,6 +98,11 @@ export interface AuthSession {
   tokenType: "Bearer";
   expiresIn: number;
   refreshExpiresAt: string;
+  user: AuthUser;
+}
+
+/** Browser state contains identity only. Tokens stay in HttpOnly cookies. */
+export interface ClientSession {
   user: AuthUser;
 }
 

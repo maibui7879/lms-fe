@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
+import { LoginForm } from "@/components/auth/login-form";
 
 export const metadata: Metadata = { title: "Đăng nhập" };
 
 export default function LoginPage() {
   return (
-    <main className="mx-auto min-h-screen max-w-md px-6 py-16">
-      <h1 className="text-3xl font-bold">Đăng nhập</h1>
-    </main>
+    <Suspense fallback={<p>Đang tải…</p>}>
+      <LoginForm />
+    </Suspense>
   );
 }

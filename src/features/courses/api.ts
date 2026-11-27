@@ -20,36 +20,34 @@ export const coursesApi = {
     );
   },
 
-  getOutline<T>(courseId: string, accessToken: string) {
+  getOutline<T>(courseId: string) {
     return authenticatedApiRequest<ApiResponse<T>>(
       `/api/v1/courses/${encodeURIComponent(courseId)}/outline`,
-      { accessToken },
+      {},
     );
   },
 
-  create(accessToken: string, input: CreateCourseInput) {
+  create(input: CreateCourseInput) {
     return authenticatedApiRequest<ApiResponse<Course>, CreateCourseInput>(
       "/api/v1/courses",
-      { accessToken, body: input, method: "POST" },
+      { body: input, method: "POST" },
     );
   },
 
   update(
-    accessToken: string,
     courseId: string,
     input: Partial<CreateCourseInput> & { expectedVersion: number },
   ) {
     return authenticatedApiRequest<ApiResponse<Course>, typeof input>(
       `/api/v1/courses/${encodeURIComponent(courseId)}`,
-      { accessToken, body: input, method: "PATCH" },
+      { body: input, method: "PATCH" },
     );
   },
 
-  remove(accessToken: string, courseId: string, expectedVersion: number) {
+  remove(courseId: string, expectedVersion: number) {
     return authenticatedApiRequest<void, { expectedVersion: number }>(
       `/api/v1/courses/${encodeURIComponent(courseId)}`,
       {
-        accessToken,
         body: { expectedVersion },
         method: "DELETE",
       },
@@ -57,36 +55,32 @@ export const coursesApi = {
   },
 
   listInstructorCourses<T>(
-    accessToken: string,
     query?: CourseQuery & { status?: Course["status"] },
   ) {
     return authenticatedApiRequest<ApiResponse<PageData<T>>>(
       "/api/v1/instructor/courses",
-      { accessToken, query },
+      { query },
     );
   },
 
-  enroll<T>(accessToken: string, courseId: string, input?: unknown) {
+  enroll<T>(courseId: string, input?: unknown) {
     return authenticatedApiRequest<ApiResponse<T>, unknown>(
       `/api/v1/courses/${encodeURIComponent(courseId)}/enrollments`,
-      { accessToken, body: input, method: "POST" },
+      { body: input, method: "POST" },
     );
   },
 
-  getMyEnrollments<T>(
-    accessToken: string,
-    query?: { page?: number; limit?: number },
-  ) {
+  getMyEnrollments<T>(query?: { page?: number; limit?: number }) {
     return authenticatedApiRequest<ApiResponse<PageData<T>>>(
       "/api/v1/enrollments/me",
-      { accessToken, query },
+      { query },
     );
   },
 
-  cancelEnrollment(accessToken: string, enrollmentId: string) {
+  cancelEnrollment(enrollmentId: string) {
     return authenticatedApiRequest<void>(
       `/api/v1/enrollments/${encodeURIComponent(enrollmentId)}`,
-      { accessToken, method: "DELETE" },
+      { method: "DELETE" },
     );
   },
 };

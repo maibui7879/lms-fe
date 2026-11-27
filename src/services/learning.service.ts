@@ -2,83 +2,64 @@ import { learningApi } from "@/features/learning/api";
 import { unwrapApiResponse } from "./api-result";
 
 export const learningService = {
-  async getDashboard<T>(accessToken: string) {
-    return unwrapApiResponse(learningApi.getDashboard<T>(accessToken));
+  async getDashboard<T>() {
+    return unwrapApiResponse(learningApi.getDashboard<T>());
   },
 
-  async getCourseProgress<T>(accessToken: string, courseId: string) {
-    return unwrapApiResponse(
-      learningApi.getCourseProgress<T>(accessToken, courseId),
-    );
+  async getCourseProgress<T>(courseId: string) {
+    return unwrapApiResponse(learningApi.getCourseProgress<T>(courseId));
   },
 
-  async getLessonProgress<T>(accessToken: string, lessonId: string) {
-    return unwrapApiResponse(
-      learningApi.getLessonProgress<T>(accessToken, lessonId),
-    );
+  async getLessonProgress<T>(lessonId: string) {
+    return unwrapApiResponse(learningApi.getLessonProgress<T>(lessonId));
   },
 
-  async completeLesson<T>(
-    accessToken: string,
-    lessonId: string,
-    input: unknown,
-  ) {
-    return unwrapApiResponse(
-      learningApi.completeLesson<T>(accessToken, lessonId, input),
-    );
+  async completeLesson<T>(lessonId: string, input: unknown) {
+    return unwrapApiResponse(learningApi.completeLesson<T>(lessonId, input));
   },
 
-  async completeItem<T>(accessToken: string, itemId: string, input: unknown) {
-    return unwrapApiResponse(
-      learningApi.completeItem<T>(accessToken, itemId, input),
-    );
+  async completeItem<T>(itemId: string, input: unknown) {
+    return unwrapApiResponse(learningApi.completeItem<T>(itemId, input));
   },
 
-  async getResume<T>(accessToken: string, courseId: string) {
-    return unwrapApiResponse(learningApi.getResume<T>(accessToken, courseId));
+  async getResume<T>(courseId: string) {
+    return unwrapApiResponse(learningApi.getResume<T>(courseId));
   },
 
-  async saveResume<T>(accessToken: string, courseId: string, input: unknown) {
-    return unwrapApiResponse(
-      learningApi.saveResume<T>(accessToken, courseId, input),
-    );
+  async saveResume<T>(courseId: string, input: unknown) {
+    return unwrapApiResponse(learningApi.saveResume<T>(courseId, input));
   },
 
-  async getRecommendations<T>(accessToken: string) {
-    return unwrapApiResponse(learningApi.getRecommendations<T>(accessToken));
+  async getRecommendations<T>() {
+    return unwrapApiResponse(learningApi.getRecommendations<T>());
   },
 
-  async getMyCertificates<T>(accessToken: string) {
-    return unwrapApiResponse(learningApi.getMyCertificates<T>(accessToken));
+  async getMyCertificates<T>() {
+    return unwrapApiResponse(learningApi.getMyCertificates<T>());
   },
 
-  downloadCertificate(accessToken: string, certificateId: string) {
-    return learningApi.downloadCertificate(accessToken, certificateId);
+  downloadCertificate(certificateId: string) {
+    return learningApi.downloadCertificate(certificateId);
   },
 
   async verifyCertificate<T>(code: string) {
     return unwrapApiResponse(learningApi.verifyCertificate<T>(code));
   },
 
-  async getQuizScores<T>(accessToken: string, courseId: string, mine = true) {
-    return unwrapApiResponse(
-      learningApi.getQuizScores<T>(accessToken, courseId, mine),
-    );
+  async getQuizScores<T>(courseId: string, mine = true) {
+    return unwrapApiResponse(learningApi.getQuizScores<T>(courseId, mine));
   },
 
   async getInstructorLearners<T>(
-    accessToken: string,
     courseId: string,
     query?: { page?: number; limit?: number },
   ) {
     return unwrapApiResponse(
-      learningApi.getInstructorLearners<T>(accessToken, courseId, query),
+      learningApi.getInstructorLearners<T>(courseId, query),
     );
   },
 
-  async getInstructorAnalytics<T>(accessToken: string, courseId: string) {
-    return unwrapApiResponse(
-      learningApi.getInstructorAnalytics<T>(accessToken, courseId),
-    );
+  async getInstructorAnalytics<T>(courseId: string) {
+    return unwrapApiResponse(learningApi.getInstructorAnalytics<T>(courseId));
   },
 };

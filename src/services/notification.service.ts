@@ -3,20 +3,15 @@ import type { PageQuery } from "@/lib/types";
 import { unwrapApiResponse } from "./api-result";
 
 export const notificationService = {
-  async listNotifications(
-    accessToken: string,
-    query?: PageQuery & { unreadOnly?: boolean },
-  ) {
-    return unwrapApiResponse(notificationsApi.list(accessToken, query));
+  async listNotifications(query?: PageQuery & { unreadOnly?: boolean }) {
+    return unwrapApiResponse(notificationsApi.list(query));
   },
 
-  async getUnreadCount(accessToken: string) {
-    return unwrapApiResponse(notificationsApi.getUnreadCount(accessToken));
+  async getUnreadCount() {
+    return unwrapApiResponse(notificationsApi.getUnreadCount());
   },
 
-  async markNotificationAsRead(accessToken: string, notificationId: string) {
-    return unwrapApiResponse(
-      notificationsApi.markAsRead(accessToken, notificationId),
-    );
+  async markNotificationAsRead(notificationId: string) {
+    return unwrapApiResponse(notificationsApi.markAsRead(notificationId));
   },
 };

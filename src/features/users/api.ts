@@ -2,65 +2,61 @@ import { authenticatedApiRequest } from "@/lib/api-client";
 import type { ApiResponse } from "@/lib/types";
 
 export const usersApi = {
-  getMe<T>(accessToken: string) {
-    return authenticatedApiRequest<ApiResponse<T>>("/api/v1/users/me", {
-      accessToken,
-    });
+  getMe<T>() {
+    return authenticatedApiRequest<ApiResponse<T>>("/api/v1/users/me", {});
   },
 
-  updateMe<T>(accessToken: string, input: unknown) {
+  updateMe<T>(input: unknown) {
     return authenticatedApiRequest<ApiResponse<T>, unknown>(
       "/api/v1/users/me",
-      { accessToken, body: input, method: "PATCH" },
+      { body: input, method: "PATCH" },
     );
   },
 
-  getProfile<T>(accessToken: string) {
-    return authenticatedApiRequest<ApiResponse<T>>("/api/v1/users/me/profile", {
-      accessToken,
-    });
+  getProfile<T>() {
+    return authenticatedApiRequest<ApiResponse<T>>(
+      "/api/v1/users/me/profile",
+      {},
+    );
   },
 
-  updateProfile<T>(accessToken: string, input: unknown) {
+  updateProfile<T>(input: unknown) {
     return authenticatedApiRequest<ApiResponse<T>, unknown>(
       "/api/v1/users/me/profile",
-      { accessToken, body: input, method: "PATCH" },
+      { body: input, method: "PATCH" },
     );
   },
 
-  deleteProfile(accessToken: string) {
+  deleteProfile() {
     return authenticatedApiRequest<void>("/api/v1/users/me/profile", {
-      accessToken,
       method: "DELETE",
     });
   },
 
-  deactivateMe(accessToken: string) {
+  deactivateMe() {
     return authenticatedApiRequest<void>("/api/v1/users/me", {
-      accessToken,
       method: "DELETE",
     });
   },
 
-  updatePassword(accessToken: string, input: unknown) {
+  updatePassword(input: unknown) {
     return authenticatedApiRequest<unknown, unknown>(
       "/api/v1/users/me/password",
-      { accessToken, body: input, method: "POST" },
+      { body: input, method: "POST" },
     );
   },
 
-  getRoleRequests<T>(accessToken: string) {
+  getRoleRequests<T>() {
     return authenticatedApiRequest<ApiResponse<T>>(
       "/api/v1/users/me/role-requests",
-      { accessToken },
+      {},
     );
   },
 
-  createRoleRequest<T>(accessToken: string, input: unknown) {
+  createRoleRequest<T>(input: unknown) {
     return authenticatedApiRequest<ApiResponse<T>, unknown>(
       "/api/v1/users/me/role-requests",
       {
-        accessToken,
         body: input,
         method: "POST",
       },
@@ -69,22 +65,20 @@ export const usersApi = {
 };
 
 export const adminUsersApi = {
-  list<T>(accessToken: string, query?: Record<string, string | number>) {
+  list<T>(query?: Record<string, string | number>) {
     return authenticatedApiRequest<ApiResponse<T>>("/api/v1/admin/users", {
-      accessToken,
       query,
     });
   },
 
-  listAudits<T>(accessToken: string, userId: string, query?: object) {
+  listAudits<T>(userId: string, query?: object) {
     return authenticatedApiRequest<ApiResponse<T>>(
       `/api/v1/admin/users/${encodeURIComponent(userId)}/audit`,
-      { accessToken, query },
+      { query },
     );
   },
 
   updateRole<T>(
-    accessToken: string,
     userId: string,
     input: {
       role: "ADMIN" | "INSTRUCTOR" | "STUDENT";
@@ -94,32 +88,31 @@ export const adminUsersApi = {
   ) {
     return authenticatedApiRequest<ApiResponse<T>, typeof input>(
       `/api/v1/admin/users/${encodeURIComponent(userId)}/role`,
-      { accessToken, body: input, method: "PATCH" },
+      { body: input, method: "PATCH" },
     );
   },
 
   updateStatus<T>(
-    accessToken: string,
     userId: string,
     input: { status: "ACTIVE" | "INACTIVE"; expectedVersion: number },
   ) {
     return authenticatedApiRequest<ApiResponse<T>, typeof input>(
       `/api/v1/admin/users/${encodeURIComponent(userId)}/status`,
-      { accessToken, body: input, method: "PATCH" },
+      { body: input, method: "PATCH" },
     );
   },
 
-  listRoleRequests<T>(accessToken: string) {
+  listRoleRequests<T>() {
     return authenticatedApiRequest<ApiResponse<T>>(
       "/api/v1/admin/users/role-requests",
-      { accessToken },
+      {},
     );
   },
 
-  reviewRoleRequest<T>(accessToken: string, requestId: string, input: unknown) {
+  reviewRoleRequest<T>(requestId: string, input: unknown) {
     return authenticatedApiRequest<ApiResponse<T>, unknown>(
       `/api/v1/admin/users/role-requests/${encodeURIComponent(requestId)}/review`,
-      { accessToken, body: input, method: "PATCH" },
+      { body: input, method: "PATCH" },
     );
   },
 };

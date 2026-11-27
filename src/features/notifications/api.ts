@@ -18,24 +18,24 @@ export interface Notification {
 }
 
 export const notificationsApi = {
-  list(accessToken: string, query?: PageQuery & { unreadOnly?: boolean }) {
+  list(query?: PageQuery & { unreadOnly?: boolean }) {
     return authenticatedApiRequest<ApiResponse<PageData<Notification>>>(
       "/api/v1/notifications",
-      { accessToken, query },
+      { query },
     );
   },
 
-  getUnreadCount(accessToken: string) {
+  getUnreadCount() {
     return authenticatedApiRequest<ApiResponse<{ count: number }>>(
       "/api/v1/notifications/unread-count",
-      { accessToken },
+      {},
     );
   },
 
-  markAsRead(accessToken: string, notificationId: string) {
+  markAsRead(notificationId: string) {
     return authenticatedApiRequest<ApiResponse<Notification>>(
       `/api/v1/notifications/${encodeURIComponent(notificationId)}/read`,
-      { accessToken, method: "PUT" },
+      { method: "PUT" },
     );
   },
 };

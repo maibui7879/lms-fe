@@ -1,18 +1,11 @@
-import {
-  apiRequest,
-  authenticatedApiRequest,
-  buildApiUrl,
-} from "@/lib/api-client";
-import type { AuthSession, LoginInput } from "@/lib/types";
+import { apiRequest, buildApiUrl } from "@/lib/api-client";
+import type { LoginInput } from "@/lib/types";
+import { authRequest } from "@/lib/auth-client";
 
 export interface RegisterInput {
   email: string;
   password: string;
   displayName: string;
-}
-
-export interface RefreshInput {
-  refreshToken: string;
 }
 
 export type OAuthProvider = "google" | "github";
@@ -25,10 +18,7 @@ export const authApi = {
   },
 
   login(input: LoginInput) {
-    return apiRequest<AuthSession, LoginInput>("/api/v1/auth/login", {
-      body: input,
-      method: "POST",
-    });
+    return authRequest("login", input);
   },
 
   register(input: RegisterInput) {
@@ -38,11 +28,8 @@ export const authApi = {
     });
   },
 
-  refresh(input: RefreshInput) {
-    return apiRequest<AuthSession, RefreshInput>("/api/v1/auth/refresh", {
-      body: input,
-      method: "POST",
-    });
+  refresh() {
+    return authRequest("refresh");
   },
 
   verifyEmail(input: { email: string; otp: string }) {
@@ -73,18 +60,12 @@ export const authApi = {
     });
   },
 
-  logout(input: RefreshInput) {
-    return apiRequest<void, RefreshInput>("/api/v1/auth/logout", {
-      body: input,
-      method: "POST",
-    });
+  logout() {
+    return authRequest("logout");
   },
 
-  logoutAll(accessToken: string) {
-    return authenticatedApiRequest<unknown>("/api/v1/auth/logout-all", {
-      accessToken,
-      method: "POST",
-    });
+  logoutAll() {
+    return authRequest("logout-all");
   },
 
   getPublicKey<T>() {
