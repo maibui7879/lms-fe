@@ -1,6 +1,6 @@
 ﻿# LMS Frontend — Hướng dẫn công việc
 
-Tài liệu chia việc cho **4 thành viên, mỗi người một nhánh**. Đọc phần chung trước, sau đó làm theo phần của mình. Tên component và đường dẫn chưa có được ghi là **cần tạo**, không phải code đã làm xong.
+Tài liệu chia việc cho **4 thành viên, mỗi người phụ trách một module như backend và làm trên một nhánh**: Identity, Course, Quiz, Learning. Người phụ trách làm đầy đủ màn hình, API/service frontend, component và test của module đó. Tên component và đường dẫn chưa có được ghi là **cần tạo**, không phải code đã làm xong.
 
 ## 1. Đọc gì trước khi làm?
 
@@ -18,16 +18,34 @@ Hiện frontend có khung trang và các hàm gọi API. Các thành viên tri�
 
 ## 2. Chia việc theo nhánh
 
-Điền tên người nhận trước khi bắt đầu:
+Điền tên người nhận trước khi bắt đầu. Giữ các tên nhánh hiện có, không cần đổi nhánh theo tên module:
 
-| Thành viên     | Nhánh                             | Công việc chính                                                                             |
-| -------------- | --------------------------------- | ------------------------------------------------------------------------------------------- |
-| TV1 — điền tên | `feat/auth/login`                 | Tài khoản, yêu cầu làm giảng viên, Admin quản lý người dùng; khung UI và thông báo chung    |
-| TV2 — điền tên | `feat/courses/catalog-enrollment` | Danh mục/ghi danh, dashboard giảng viên, tạo khóa/chương/bài, kéo thả, Admin duyệt khóa học |
-| TV3 — điền tên | `feat/quizzes/quiz-player`        | Soạn câu hỏi, làm quiz, lưu bài đang làm, nộp bài, kết quả và thống kê câu hỏi              |
-| TV4 — điền tên | `feat/learning/progress`          | Dashboard học viên, học video/Markdown, tiến độ, hỏi đáp, báo cáo học viên và xuất CSV      |
+| Thành viên     | Nhánh                             | Công việc chính                                                                                                                               |
+| -------------- | --------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| TV1 — điền tên | `feat/auth/login`                 | **Identity:** đăng ký/đăng nhập, phiên, hồ sơ, yêu cầu giảng viên, Admin quản lý người dùng/role                                              |
+| TV2 — điền tên | `feat/courses/catalog-enrollment` | **Course:** danh mục, nội dung khóa/chương/bài, ghi danh, hỏi đáp, dashboard quản lý khóa, Admin duyệt khóa và thống kê ghi danh              |
+| TV3 — điền tên | `feat/quizzes/quiz-player`        | **Quiz:** soạn quiz/câu hỏi, lượt làm, lưu đáp án, nộp bài, điểm/kết quả từng lượt và thống kê câu hỏi                                        |
+| TV4 — điền tên | `feat/learning/progress`          | **Learning:** trang học ghép nội dung Course, tiến độ, hoàn thành, học tiếp, dashboard học tập, báo cáo tiến độ/điểm tổng hợp, CSV, chứng chỉ |
 
 `main` nhận phần đã kiểm tra qua pull request. Nhánh `feat/shared/gateway-api-client` đã có dành cho sửa phần gọi API chung khi cần, **không tính là người thứ năm**. TV1 làm đầu mối phần chung; thay đổi chung merge vào `main` rồi các thành viên lấy về.
+
+### Quy tắc chia việc giữa các module
+
+- Chia theo dữ liệu/chức năng backend, không chia theo vai trò Student/Teacher/Admin. Ví dụ Admin quản lý user thuộc Identity, Admin duyệt course thuộc Course, giảng viên soạn câu hỏi thuộc Quiz.
+- Mỗi người viết API/service/component/test của module mình. Màn hình cần chức năng module khác thì gọi service hoặc ghép component người đó cung cấp; không viết lại phần của họ.
+- Course sở hữu nội dung và hỏi đáp; Learning sở hữu tiến độ và vị trí học tiếp. Quiz sở hữu điểm từng lượt; Learning hiển thị điểm tổng hợp từ API Learning, không chấm lại bài.
+- Một trang có thể ghép nhiều module nhưng chỉ có một người phụ trách file page. Bảng dưới chốt phần ai làm và ai chỉ ghép lại.
+
+| Phần giao nhau                                           | Người làm chính | Người sử dụng                                       |
+| -------------------------------------------------------- | --------------- | --------------------------------------------------- |
+| Phiên và kiểm tra đăng nhập                              | TV1             | Cả nhóm dùng hàm/hook chung                         |
+| Nội dung video/Markdown, cây chương/bài                  | TV2             | TV4 ghép vào trang học                              |
+| Hỏi đáp và trả lời                                       | TV2             | TV4 ghép dưới bài; TV2 dùng trên dashboard khóa học |
+| Soạn quiz và trình làm quiz                              | TV3             | TV2 ghép vào giáo trình; TV4 mở từ trang học        |
+| Thanh tiến độ, nút hoàn thành/học tiếp, báo cáo Learning | TV4             | TV2 ghép số liệu phù hợp trên dashboard giảng viên  |
+| Số liệu ghi danh của Course                              | TV2             | Trang quản lý khóa và Admin thống kê ghi danh       |
+
+Phần hạ tầng chung làm một lần: TV1 dựng phiên, provider và khung header/sidebar; cả nhóm tái dùng. Notification là service hỗ trợ riêng của backend, không thuộc Identity: giao TV1 làm thêm chuông/trang thông báo qua feature notifications sẵn có, giữ API/service tách riêng. Mỗi người vẫn tự làm test cho module của mình; TV1 chỉ cấu hình công cụ kiểm tra chung.
 
 ## 3. Cài đặt và chạy
 
@@ -91,7 +109,7 @@ Không viết lại fetch/URL trong từng component. Backend thường trả `{
 | Phiên và bài quiz đang làm   | Zustand; persist cho bản nháp quiz                                                    | Zustand                                                        |
 | Theme ít thay đổi            | React Context                                                                         | TV1 tạo ThemeContext/ThemeProvider theo yêu cầu đề             |
 | Kéo thả chương/bài           | [dnd-kit](https://dndkit.com/react/hooks/use-sortable/)                               | Đề xuất cho TV2, chưa cài; thống nhất phiên bản trước khi dùng |
-| Markdown                     | [react-markdown](https://github.com/remarkjs/react-markdown), remark-gfm nếu cần bảng | Đề xuất cho TV4, chưa cài                                      |
+| Markdown                     | [react-markdown](https://github.com/remarkjs/react-markdown), remark-gfm nếu cần bảng | TV2 tạo component nội dung; TV4 ghép vào trang học; chưa cài   |
 | Test                         | Vitest + React Testing Library + user-event                                           | Đã cài; coverage chưa cấu hình                                 |
 
 Chỉ thêm thư viện cần dùng, cập nhật lockfile và báo nhóm. Không cần thêm Redux vì đã dùng Zustand.
@@ -122,7 +140,7 @@ src/features/courses/
 - Dialog dùng được bằng bàn phím và trả focus về nút mở. Form phải có nhãn và lỗi rõ ràng; trạng thái không chỉ thể hiện bằng màu.
 - Page/layout mặc định ở server; form, sự kiện bấm, Zustand/React Query cần `"use client"`. Giữ page có metadata ở server và tách phần tương tác thành component con. Server không đọc được Zustand trình duyệt.
 
-## 5. TV1 — Tài khoản, quản lý người dùng và phần chung
+## 5. TV1 — Module Identity
 
 **Nhánh:** `feat/auth/login`.
 
@@ -158,7 +176,7 @@ src/features/courses/
 
 **Tự kiểm tra:** login đúng/sai, OTP sai, token hết hạn, logout lỗi, học viên vào URL Admin bị chặn, đổi tài khoản không thấy cache người trước. Bàn giao danh sách component chung và ví dụ props cho nhóm.
 
-## 6. TV2 — Khóa học, giáo trình và duyệt khóa học
+## 6. TV2 — Module Course
 
 **Nhánh:** `feat/courses/catalog-enrollment`.
 
@@ -177,6 +195,9 @@ src/features/courses/
 | [Tạo/sửa khóa học](https://www.figma.com/design/YXRuMQQZ4iqVI1RioMs2bE/Untitled?node-id=70-3350)                                                                                              | CourseForm, CourseSettings                                                |
 | [Soạn chương/bài](https://www.figma.com/design/YXRuMQQZ4iqVI1RioMs2bE/Untitled?node-id=71-7318), [panel sửa nhanh](https://www.figma.com/design/YXRuMQQZ4iqVI1RioMs2bE/Untitled?node-id=97-2) | CurriculumBuilder, ChapterRow, LessonRow, LearningItemForm, EditDrawer    |
 | Admin: hàng đợi khóa học, xem trước, duyệt/từ chối                                                                                                                                            | ReviewQueue, CoursePreview, ReviewDialog                                  |
+| Hỏi đáp theo khóa/bài, trả lời và quản lý câu hỏi                                                                                                                                             | DiscussionList, DiscussionItem, ReplyForm                                 |
+| Nội dung học dùng trong trang học TV4                                                                                                                                                         | VideoPlayer, MarkdownContent, CurriculumSidebar; TV2 làm, TV4 ghép        |
+| Admin thống kê ghi danh                                                                                                                                                                       | EnrollmentStats theo dữ liệu Course                                       |
 
 Danh mục công khai và Admin duyệt khóa học vẫn bắt buộc theo đề dù chưa có frame hoàn chỉnh. Dùng layout/component chung để làm các màn còn thiếu.
 
@@ -189,21 +210,24 @@ Danh mục công khai và Admin duyệt khóa học vẫn bắt buộc theo đ�
 5. Kéo thả chương/bài bằng dnd-kit, có cách dùng bàn phím. Gửi đủ thứ tự và version theo API; request lỗi thì trả về thứ tự cũ, báo cho người dùng.
 6. Làm gửi duyệt, hàng đợi Admin, duyệt/từ chối có lý do. Hiện DRAFT/IN_REVIEW/PUBLISHED/REJECTED theo server. Gửi version cũ bị 409 thì đọc lại và báo xung đột, không âm thầm ghi đè.
 7. Màn soạn giáo trình ghép component quiz TV3 cung cấp; thống nhất props courseId/lessonId và vị trí quiz trước khi ghép.
+8. Phụ trách toàn bộ phần hỏi đáp: hàm API/service, màn hỏi đáp theo khóa/bài và các component DiscussionList, DiscussionItem, ReplyForm trong feature Course. Đọc [Discussion controller](https://github.com/maibui7879/lms-backend/blob/main/services/course-service/src/modules/discussions/discussions.controller.ts) và [Discussion service](https://github.com/maibui7879/lms-backend/blob/main/services/course-service/src/modules/discussions/discussions.service.ts). Tạo câu hỏi với courseId/lessonId; trả lời gửi parentId và lessonId khớp câu gốc. API list hiện phân trang theo khóa, chưa lọc theo bài; phối hợp backend bổ sung lọc lesson để không bỏ sót câu hỏi. Dashboard giảng viên dùng lại component theo khóa được chọn, không mặc định có API gom hỏi đáp mọi khóa. Bàn giao component nhận courseId/lessonId cho TV4 ghép vào trang học; TV4 không viết lại API/service hỏi đáp.
+9. Tạo VideoPlayer, MarkdownContent và CurriculumSidebar trong feature Course từ nội dung/outline backend trả. Component chỉ hiển thị nội dung, nhận callback khi cần báo vị trí phát; không tự cập nhật tiến độ Learning. Bàn giao props cho TV4 ghép trang học.
+10. Làm màn Admin thống kê ghi danh từ dữ liệu Course được phép đọc. Nếu cần số tổng/bộ lọc chưa có thì phối hợp backend Course bổ sung, không đếm trang đầu thành tổng. Phân biệt số người và số lượt ghi danh.
 
 **API:** course list/detail/create/update/delete, `/instructor/courses`, chapters/lessons/items/order, submit-review/review, enrollments. Hàm cơ bản đã có; giáo trình/duyệt cần thêm theo controller.
 
 ### Đọc ảnh Teacher Dashboard thế nào?
 
-| Phần trong ảnh                        | Cách làm                                                                                       |
-| ------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| Tổng khóa, nháp/chờ duyệt/đã xuất bản | Tính từ dữ liệu đầy đủ; số tổng không được chỉ đếm trang đầu                                   |
-| Tổng học viên                         | TV4 cung cấp dữ liệu. Tổng lượt ghi danh khác số người không trùng, phải ghi đúng nhãn         |
-| Hỏi đáp gần đây, trả lời ngay         | TV4 cung cấp component/API hỏi đáp, TV2 ghép; không dựng chức năng đọc/hữu ích khi API chưa có |
-| Student/Admin/Teacher                 | Chỉ đổi khu vực được tài khoản cho phép xem, không tạo quyền mới                               |
+| Phần trong ảnh                        | Cách làm                                                                                                                 |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| Tổng khóa, nháp/chờ duyệt/đã xuất bản | Tính từ dữ liệu đầy đủ; số tổng không được chỉ đếm trang đầu                                                             |
+| Tổng học viên                         | TV4 cung cấp dữ liệu. Tổng lượt ghi danh khác số người không trùng, phải ghi đúng nhãn                                   |
+| Hỏi đáp theo khóa, trả lời ngay       | TV2 làm API/service và component hỏi đáp; dùng lại trên dashboard theo khóa được chọn và bàn giao cho TV4 ghép trang học |
+| Student/Admin/Teacher                 | Chỉ đổi khu vực được tài khoản cho phép xem, không tạo quyền mới                                                         |
 
-**Tự kiểm tra:** danh sách rỗng/lọc/phân trang, ghi danh, 404/403, giảng viên không sửa khóa người khác, kéo thả lỗi, version cũ, Admin duyệt/từ chối và catalog cập nhật sau duyệt.
+**Tự kiểm tra:** danh sách rỗng/lọc/phân trang, ghi danh, 404/403, giảng viên không sửa khóa người khác, kéo thả lỗi, version cũ, Admin duyệt/từ chối, catalog cập nhật sau duyệt, hỏi đáp sai quyền, trả lời đúng câu gốc, nội dung video/Markdown hiển thị đúng và thống kê ghi danh đủ dữ liệu.
 
-## 7. TV3 — Câu hỏi và làm quiz
+## 7. TV3 — Module Quiz
 
 **Nhánh:** `feat/quizzes/quiz-player`.
 
@@ -244,7 +268,7 @@ Cách ghép component Quiz:
 
 **Tự kiểm tra:** chọn một/nhiều đáp án, chuyển câu không mất bài, reload, save lỗi/version cũ, hết giờ, nộp hai lần, không đọc được lượt người khác. Backend phải test hàm chấm điểm và các trường hợp biên; frontend không thay backend chấm bài.
 
-## 8. TV4 — Học bài, tiến độ và báo cáo
+## 8. TV4 — Module Learning
 
 **Nhánh:** `feat/learning/progress`.
 
@@ -255,27 +279,26 @@ Cách ghép component Quiz:
 
 ### Màn hình và component
 
-| Màn hình                                                                                                                              | Component cần tạo/ghép                                                        |
-| ------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
-| [Student Dashboard](https://www.figma.com/design/YXRuMQQZ4iqVI1RioMs2bE/Untitled?node-id=68-3), My Learning, Progress                 | LearningCourseCard, ProgressBar, ResumeButton                                 |
-| [Học video và giáo trình](https://www.figma.com/design/YXRuMQQZ4iqVI1RioMs2bE/Untitled?node-id=68-798)                                | LessonPlayer, VideoPlayer, MarkdownContent, CurriculumSidebar, CompleteButton |
-| Hỏi đáp dưới bài                                                                                                                      | DiscussionList, DiscussionItem, ReplyForm; dùng lại ở dashboard giảng viên    |
-| [Báo cáo giảng viên](https://www.figma.com/design/YXRuMQQZ4iqVI1RioMs2bE/Untitled?node-id=100-1006), danh sách/chi tiết học viên, CSV | ReportFilters, LearnerTable, LearnerProgress, ExportCsvButton                 |
-| Admin thống kê ghi danh                                                                                                               | EnrollmentStats theo quyền API                                                |
-| [Chứng chỉ](https://www.figma.com/design/YXRuMQQZ4iqVI1RioMs2bE/Untitled?node-id=100-525), làm sau phần bắt buộc                      | CertificateCard, DownloadButton, VerifyCertificate                            |
+| Màn hình                                                                                                                              | Component cần tạo/ghép                                                                   |
+| ------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| [Student Dashboard](https://www.figma.com/design/YXRuMQQZ4iqVI1RioMs2bE/Untitled?node-id=68-3), My Learning, Progress                 | LearningCourseCard, ProgressBar, ResumeButton                                            |
+| [Học video và giáo trình](https://www.figma.com/design/YXRuMQQZ4iqVI1RioMs2bE/Untitled?node-id=68-798)                                | LearningPage, ProgressBar, CompleteButton, ResumeButton; ghép nội dung TV2 và quiz TV3   |
+| Hỏi đáp dưới bài                                                                                                                      | Ghép DiscussionList, DiscussionItem, ReplyForm do TV2 cung cấp; truyền courseId/lessonId |
+| [Báo cáo giảng viên](https://www.figma.com/design/YXRuMQQZ4iqVI1RioMs2bE/Untitled?node-id=100-1006), danh sách/chi tiết học viên, CSV | ReportFilters, LearnerTable, LearnerProgress, ExportCsvButton                            |
+| [Chứng chỉ](https://www.figma.com/design/YXRuMQQZ4iqVI1RioMs2bE/Untitled?node-id=100-525), làm sau phần bắt buộc                      | CertificateCard, DownloadButton, VerifyCertificate                                       |
 
 ### Thứ tự làm
 
 1. My Learning/dashboard lấy khóa đã ghi danh, tiến độ và chỗ học tiếp. Course API cung cấp cấu trúc/nội dung, Learning cung cấp tiến độ; không tạo hai bộ nội dung riêng.
-2. Trang học hiện video nhúng/Markdown theo LearningItem. Dùng react-markdown; không đưa HTML tùy ý vào DOM. Backend lưu HTML thì thống nhất cách làm sạch/hiển thị, không coi HTML là Markdown.
+2. Phụ trách file page trang học và LearningPage: ghép VideoPlayer, MarkdownContent, CurriculumSidebar từ TV2 với ProgressBar, CompleteButton và ResumeButton của mình. TV2 lo đọc/hiển thị nội dung Course; TV4 lo trạng thái học, lưu vị trí và hoàn thành. Không tạo player hoặc trình đọc Markdown thứ hai.
 3. Trang học kiểm tra login/ghi danh, backend kiểm tra lại. Khóa chương/lý do khóa lấy từ API, không tự mở bài kế tiếp vì đã bấm nút UI.
 4. Complete item/bài gửi `{ completed: true, contentVersion }`, đọc lại tiến độ. Quiz hoàn thành do backend quyết định. Item 100% chưa chắc khóa completed khi quiz bắt buộc chưa đạt.
 5. Resume gửi lessonId/learningItemId/contentVersion/positionSeconds/expectedRevision. Lần đầu revision 0, lần sau dùng số server trả; bị 409 thì đọc lại. Không ghi checkpoint cũ sau khi đã chuyển bài.
-6. Hỏi đáp dùng courseId kèm lessonId, trả lời bằng parentId. API list hiện phân trang theo khóa, chưa có query lọc bài: chỉ lọc một trang frontend sẽ bỏ sót. Phối hợp backend thêm lọc theo lesson để phân trang đúng. TV2 dùng lại component/hàm này cho dashboard.
+6. Ghép component hỏi đáp TV2 cung cấp vào dưới bài học, truyền courseId/lessonId đang mở. TV2 phụ trách API/service, gửi câu hỏi/trả lời và phân trang; TV4 chỉ lo vị trí hiển thị và kiểm tra component nhận đúng bài khi chuyển bài. Không tạo bộ component hoặc hàm gọi API hỏi đáp thứ hai.
 7. Báo cáo lấy học viên/tiến độ/điểm theo khóa giảng viên sở hữu, Admin theo quyền backend. TV3 cung cấp thống kê quiz. CSV xuất dữ liệu thật được phép đọc, đủ mọi trang phù hợp bộ lọc; xử lý dấu phẩy, xuống dòng và ô bị spreadsheet hiểu là công thức. Manifest hiện chưa có route xuất CSV riêng.
-8. Làm thống kê ghi danh bắt buộc trước, rồi mới chứng chỉ PDF/gợi ý học.
+8. Làm dashboard tiến độ và báo cáo Learning trước, rồi mới chứng chỉ PDF/gợi ý học. Thống kê ghi danh của Course do TV2 làm; TV4 cung cấp số liệu hoàn thành/tiến độ từ Learning khi trang đó cần ghép thêm.
 
-**Tự kiểm tra:** chưa/canceled enrollment, chương khóa, complete lặp không cộng đôi, contentVersion cũ, resume null/xung đột, hỏi đáp sai quyền, giảng viên chỉ xem khóa mình, CSV đúng bộ lọc/đủ dữ liệu. Frontend test hàm %/hiển thị biên; backend test quy tắc tiến độ thật.
+**Tự kiểm tra:** chưa/canceled enrollment, chương khóa, complete lặp không cộng đôi, contentVersion cũ, resume null/xung đột, chuyển bài truyền đúng ID cho nội dung/hỏi đáp TV2, giảng viên chỉ xem báo cáo khóa mình, CSV đúng bộ lọc/đủ dữ liệu. Frontend test hàm %/hiển thị biên; backend test quy tắc tiến độ thật.
 
 ## 9. Yêu cầu đề bài phải có người phụ trách
 
@@ -284,7 +307,7 @@ Cách ghép component Quiz:
 | TypeScript strict, generic, utility type, type guard        | Tất cả: giữ [strict config](./tsconfig.json), props/API có kiểu, any phải có lý do; dùng Partial/Pick/Omit/Record và type guard phù hợp |
 | Hai custom hook generic                                     | TV1: useDebounce<T> hiện có + usePaginatedQuery<TItem> cần tạo và dùng trong danh sách, cả hai có test                                  |
 | Feature folders, React pattern                              | Mọi người để code trong feature; TV3 làm Compound Component cho Quiz, giải thích trong báo cáo                                          |
-| Zustand và Context                                          | TV1: phiên/ThemeContext; TV3: persist quiz; API dùng React Query, không copy toàn bộ sang Zustand                                       | Zustand |
+| Zustand và Context                                          | TV1: phiên/ThemeContext; TV3: persist quiz; API dùng React Query, không copy toàn bộ sang Zustand                                       |
 | Code splitting, memo/useMemo/useCallback có lý do           | TV3 tải quiz editor/player khi cần, TV4 tải báo cáo nặng khi cần; đo rồi tối ưu, giữ ảnh Profiler/Lighthouse trước và sau               |
 | Danh sách từ 200 dòng                                       | TV1/TV2/TV4 dùng phân trang API, không render tất cả người dùng/khóa/học viên cùng lúc                                                  |
 | Đăng ký/login, nhiều lớp bảo vệ, ít nhất hai role           | TV1 + backend; LMS làm đủ Student/Instructor/Admin. Cả nhóm thử API với tài khoản sai quyền                                             |
