@@ -1,48 +1,45 @@
-# LMS Frontend — Hướng dẫn đọc code và triển khai theo nhánh
+﻿# LMS Frontend — Hướng dẫn công việc
 
-Frontend Next.js của hệ thống LMS, phát triển riêng với [lms-backend](https://github.com/maibui7879/lms-backend). Người mới đọc mục 1–4, sau đó đọc phần của nhánh mình nhận. Mỗi nhánh chứa toàn bộ dự án; tên nhánh xác định phạm vi công việc, không phải một ứng dụng riêng.
+Tài liệu chia việc cho **4 thành viên, mỗi người một nhánh**. Đọc phần chung trước, sau đó làm theo phần của mình. Tên component và đường dẫn chưa có được ghi là **cần tạo**, không phải code đã làm xong.
 
-## 1. Trạng thái thực tế và nguồn đối chiếu
+## 1. Đọc gì trước khi làm?
 
-Đối chiếu ngày **27/11/2026** với code frontend và backend trên `main`. Backend thay đổi độc lập: kiểm tra lại Swagger, controller và DTO trước mỗi task tích hợp.
+| Nguồn                                                                                                                               | Cần đọc gì?                                                         |
+| ----------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| Đề bài `DeTai_BTL_CuoiKy_LTWNC_v2.pdf` do nhóm cung cấp                                                                             | Mục 2: yêu cầu chung; Đề 2: LMS; mục 5: sản phẩm nộp                |
+| [UI Figma](https://www.figma.com/design/YXRuMQQZ4iqVI1RioMs2bE/Untitled?node-id=68-2)                                               | Màn hình thuộc phần mình làm, bố cục, màu, font và ghi chú cạnh màn |
+| [Backend](https://github.com/maibui7879/lms-backend)                                                                                | README của service, controller, kiểu dữ liệu nhận/trả về            |
+| [Các API Gateway đang mở](https://github.com/maibui7879/lms-backend/blob/main/apps/api-gateway/src/routing/implemented-routes.json) | API mình cần đã gọi được qua Gateway chưa                           |
+| [Quy định API](https://github.com/maibui7879/lms-backend/blob/main/packages/contracts/README.md)                                    | Token, phân trang, lỗi và số phiên bản khi sửa dữ liệu              |
 
-| Phần            | Đã có trong frontend                                                                                                     | Cần triển khai tiếp                                                            |
-| --------------- | ------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------ |
-| Khung ứng dụng  | Next.js 16.4.6, React 19, TypeScript, Tailwind CSS 4; route `/`, `/login`, `/dashboard`, `/dashboard/courses/[courseId]` | Các trang còn là khung, chưa có luồng người dùng hoàn chỉnh                    |
-| Gọi API         | HTTP client, feature API và service cho Auth, Users, Course, Learning, Notification                                      | Bổ sung DTO cụ thể, API còn thiếu và kiểm thử tích hợp                         |
-| Xác thực        | Zustand session store, hàm login/refresh/logout                                                                          | Form, bảo vệ trang, xử lý hết hạn; sửa envelope login/refresh trước khi nối UI |
-| Dữ liệu và form | Đã cài TanStack Query, React Hook Form, Zod                                                                              | Chưa có QueryClientProvider và các hook/form nghiệp vụ                         |
-| Quiz            | Backend có contracts quiz/attempt/result                                                                                 | Frontend chưa có module Quiz; Gateway chưa public API Quiz                     |
-| Chất lượng      | ESLint, Prettier, Vitest, Husky, GitHub Actions                                                                          | Hiện có 2 file/10 unit test; chưa có test trình duyệt hoặc E2E toàn hệ thống   |
+Nhóm dùng **Next.js + NestJS**, tương ứng kiến trúc C trong đề. Frontend gọi Gateway; backend lưu dữ liệu, kiểm tra quyền và chấm quiz.
 
-**Khi tài liệu khác code:** kiểm tra route Gateway công bố → controller/DTO/response thực tế → contracts và business rules → tài liệu thiết kế. Nếu contract khác runtime, ghi rõ khác biệt và thống nhất với owner backend; không tự đổi giao thức để khớp riêng UI.
+Hiện frontend có khung trang và các hàm gọi API. Các thành viên triển khai màn hình theo phần việc bên dưới; phần Quiz dùng kiểu dữ liệu và API trong contract của backend.
 
-| Tài liệu/backend source                                                                                                                             | Mục đích                                                                                       |
-| --------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| [Gateway README](https://github.com/maibui7879/lms-backend/blob/main/apps/api-gateway/README.md)                                                    | Điểm vào HTTP, JWT, CORS, proxy, Socket.IO và cách chạy                                        |
-| [Route manifest thực tế](https://github.com/maibui7879/lms-backend/blob/main/apps/api-gateway/src/routing/implemented-routes.json)                  | Method/path đã public; có route không đồng nghĩa luồng liên service đã được nghiệm thu         |
-| [Contracts baseline](https://github.com/maibui7879/lms-backend/blob/main/packages/contracts/README.md)                                              | Envelope, pagination, quyền, version, idempotency và policy                                    |
-| [Endpoint catalog](https://github.com/maibui7879/lms-backend/blob/main/packages/contracts/src/endpoints.ts)                                         | OperationId, request/response, quyền và mã lỗi mục tiêu                                        |
-| [Phân tích và thiết kế](https://github.com/maibui7879/lms-backend/blob/main/docs/LMS_PROJECT_DOCUMENTATION.md)                                      | Actors, use case và luồng xuyên service; các mục đề xuất/lịch sử không phải báo cáo hoàn thành |
-| [Handoff](https://github.com/maibui7879/lms-backend/blob/main/docs/HANDOFF.md), [WORK](https://github.com/maibui7879/lms-backend/blob/main/WORK.md) | Bối cảnh, thay đổi và giới hạn kiểm thử; đối chiếu code vì có mô tả scaffold đã cũ             |
+## 2. Chia việc theo nhánh
 
-Gateway hiện public Identity, Course, Learning và Notification. Không suy ra Quiz đã chạy chỉ vì có Quiz OpenAPI, DTO hoặc biến `QUIZ_URL`.
+Điền tên người nhận trước khi bắt đầu:
 
-## 2. Cài đặt và chạy local
+| Thành viên     | Nhánh                             | Công việc chính                                                                             |
+| -------------- | --------------------------------- | ------------------------------------------------------------------------------------------- |
+| TV1 — điền tên | `feat/auth/login`                 | Tài khoản, yêu cầu làm giảng viên, Admin quản lý người dùng; khung UI và thông báo chung    |
+| TV2 — điền tên | `feat/courses/catalog-enrollment` | Danh mục/ghi danh, dashboard giảng viên, tạo khóa/chương/bài, kéo thả, Admin duyệt khóa học |
+| TV3 — điền tên | `feat/quizzes/quiz-player`        | Soạn câu hỏi, làm quiz, lưu bài đang làm, nộp bài, kết quả và thống kê câu hỏi              |
+| TV4 — điền tên | `feat/learning/progress`          | Dashboard học viên, học video/Markdown, tiến độ, hỏi đáp, báo cáo học viên và xuất CSV      |
 
-### Frontend
+`main` nhận phần đã kiểm tra qua pull request. Nhánh `feat/shared/gateway-api-client` đã có dành cho sửa phần gọi API chung khi cần, **không tính là người thứ năm**. TV1 làm đầu mối phần chung; thay đổi chung merge vào `main` rồi các thành viên lấy về.
 
-Dùng **Node.js 24**, cùng major với CI. Chạy trong thư mục frontend:
+## 3. Cài đặt và chạy
+
+Dùng Node.js 24. Chạy trong thư mục frontend:
 
 ```powershell
-git clone https://github.com/maibui7879/lms-fe.git
-cd lms-fe
 npm ci
 Copy-Item .env.example .env.local
 npm run dev
 ```
 
-Linux/macOS dùng `cp .env.example .env.local`. Nếu PowerShell chặn `npm.ps1`, thay `npm` bằng `npm.cmd`.
+Linux/macOS thay `Copy-Item` bằng `cp`. PowerShell chặn `npm.ps1` thì dùng `npm.cmd`.
 
 Theo [env mẫu](./.env.example):
 
@@ -51,231 +48,258 @@ NEXT_PUBLIC_APP_URL=http://localhost:5173
 NEXT_PUBLIC_API_URL=http://localhost:3000
 ```
 
-- Mở frontend tại `http://localhost:5173`.
-- API URL là origin Gateway, **không thêm `/api/v1`** vì từng API module đã có prefix.
-- `NEXT_PUBLIC_*` xuất hiện trong bundle trình duyệt; không chứa private key, DB URL hoặc token. Khởi động lại dev server sau khi sửa env.
-- Chạy production build local bằng `npm run build` rồi `npm run start -- --port 5173`. Nếu không truyền port, Next.js start mặc định có thể trùng port 3000 của Gateway.
+Mở `http://localhost:5173`. API URL là địa chỉ Gateway, không thêm `/api/v1` vì code đã có phần đó. Không đặt token/khóa riêng vào biến `NEXT_PUBLIC_*`.
 
-### Backend cần chạy những gì?
+Backend chạy ở repo riêng theo [Gateway README](https://github.com/maibui7879/lms-backend/blob/main/apps/api-gateway/README.md) và README từng service. Port dev: Gateway 3000, Identity 3001, Course 3002, Quiz 3003, Learning 3004, Notification 3005. Cấu hình DB/env, public key khớp Identity, `GATEWAY_ALLOWED_ORIGINS` có `http://localhost:5173`.
 
-Clone/cài backend riêng; chạy các lệnh dưới ở root backend, không phải frontend:
+Swagger: `http://localhost:3000/docs`; health Gateway: `http://localhost:3000/health`. Gateway chạy không có nghĩa tất cả service/DB đã chạy. Tài khoản demo và seed cần chuẩn bị cùng backend; hiện chưa có tài khoản demo được kiểm chứng trong README.
 
-```powershell
-git clone https://github.com/maibui7879/lms-backend.git
-cd lms-backend
-npm ci
-npm run build -w @lms/contracts
-npm run build -w @lms/auth
-```
+## 4. Code ở đâu, dùng công nghệ gì?
 
-Chuẩn bị env, DB/migration và dependency theo README từng service trước khi start. Những lệnh trên chưa khởi chạy toàn hệ thống.
+### Đọc code frontend theo thứ tự
 
-| Thành phần   | Port dev | Khi cần                                                   |
-| ------------ | -------: | --------------------------------------------------------- |
-| Gateway      |     3000 | Mọi lần frontend gọi backend                              |
-| Identity     |     3001 | Login/session, tài khoản và kiểm tra trạng thái tài khoản |
-| Course       |     3002 | Catalog, nội dung, enrollment và cấu trúc cho Learning    |
-| Quiz         |     3003 | Chưa tích hợp public; phối hợp owner Quiz/Gateway trước   |
-| Learning     |     3004 | Progress, resume, dashboard, kết quả và chứng chỉ         |
-| Notification |     3005 | Thông báo REST và thời gian thực                          |
+| File/thư mục                               | Dùng để làm gì?                                              |
+| ------------------------------------------ | ------------------------------------------------------------ |
+| [package.json](./package.json)             | Thư viện đã cài và lệnh chạy                                 |
+| [src/app/](./src/app/)                     | Đường dẫn trang, layout, đang tải/lỗi/404                    |
+| [src/features/](./src/features/)           | API theo phần: auth, users, courses, learning, notifications |
+| [src/services/](./src/services/)           | Hàm màn hình sẽ gọi, ví dụ đăng nhập/lấy khóa học            |
+| [API client](./src/lib/api-client.ts)      | Gửi request, token, query và đọc lỗi                         |
+| [Types](./src/lib/types.ts)                | Kiểu dữ liệu dùng chung                                      |
+| [Auth store](./src/store/auth-store.ts)    | Phiên đăng nhập; hiện chỉ nằm trong bộ nhớ                   |
+| [useDebounce](./src/hooks/use-debounce.ts) | Chờ ngừng gõ rồi mới tìm kiếm/gửi thay đổi                   |
 
-Ví dụ chạy Gateway sau khi đã cấu hình env:
-
-```powershell
-npm run build -w @lms/api-gateway
-npm run start -w @lms/api-gateway
-```
-
-Gateway cần `JWT_PUBLIC_KEY` khớp Identity và `GATEWAY_ALLOWED_ORIGINS` chứa `http://localhost:5173`; xem [env Gateway](https://github.com/maibui7879/lms-backend/blob/main/apps/api-gateway/.env.example). Không dùng mock token để nghiệm thu qua Gateway.
-
-Kiểm tra `http://localhost:3000/health`, `http://localhost:3000/docs`, `http://localhost:3000/docs-json`. Health Gateway chỉ xác nhận process sống, không chứng minh upstream/DB sẵn sàng. Lấy tài khoản qua đăng ký/xác minh Identity hoặc dữ liệu dev do owner cung cấp; frontend không đảm bảo có tài khoản demo mặc định.
-
-## 3. Đọc codebase theo thứ tự nào?
-
-### Bản đồ thư mục
-
-| Vị trí                                                                       | Trách nhiệm                                                              |
-| ---------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
-| [package.json](./package.json), [env mẫu](./.env.example)                    | Scripts, dependencies, URL                                               |
-| [src/app/](./src/app/), [root layout](./src/app/layout.tsx)                  | Page/layout, loading/error/not-found, metadata, font/CSS, robots/sitemap |
-| [Login page](<./src/app/(auth)/login/page.tsx>)                              | Điểm bắt đầu Auth; chưa có form                                          |
-| [Dashboard layout](<./src/app/(dashboard)/dashboard/layout.tsx>)             | Khung chung; chưa có auth guard                                          |
-| [Course page](<./src/app/(dashboard)/dashboard/courses/[courseId]/page.tsx>) | Route động hiện có; mới hiển thị ID                                      |
-| [HTTP client](./src/lib/api-client.ts)                                       | URL/query, fetch, headers, JSON/blob/204 và lỗi                          |
-| [Types](./src/lib/types.ts)                                                  | Session, course, pagination và envelope                                  |
-| [Features](./src/features/)                                                  | API theo miền nghiệp vụ; sở hữu method/path và kiểu request/response     |
-| [Services](./src/services/), [unwrap helper](./src/services/api-result.ts)   | Hàm use case cho UI, phối hợp session, lấy `.data` đúng một lần          |
-| [Auth store](./src/store/auth-store.ts)                                      | Session Zustand trong bộ nhớ trình duyệt                                 |
-| [useDebounce](./src/hooks/use-debounce.ts)                                   | Debounce cho search hoặc checkpoint khi phù hợp                          |
-| [Test setup](./src/test/setup.ts), [Vitest config](./vitest.config.mts)      | jsdom, alias `@` và mẫu tên test                                         |
-| [CI](./.github/workflows/ci.yml), [Husky](./.husky/)                         | Kiểm tra trên GitHub và trước commit/push                                |
-
-Route group `(auth)`/`(dashboard)` không xuất hiện trong URL: login là `/login`, không phải `/auth/login`.
-
-### Lần theo một request
-
-```text
-page / component / hook
-  → src/services/<domain>.service.ts
-  → src/features/<domain>/api.ts
-  → src/lib/api-client.ts
-  → Gateway :3000/api/v1/...
-  → service backend sở hữu nghiệp vụ
-```
-
-Đọc ví dụ: [course service](./src/services/course.service.ts) → [course API](./src/features/courses/api.ts) → [HTTP client](./src/lib/api-client.ts) → [Courses controller](https://github.com/maibui7879/lms-backend/blob/main/services/course-service/src/modules/courses/courses.controller.ts).
+Luồng dữ liệu: **component → service → feature API → API client → Gateway → backend**.
 
 ```ts
 import { courseService } from "@/services/course.service";
 
-// API trả { data: { items, page, limit, total }, meta }.
-// Service đã unwrap .data, caller đọc result.items.
-const result = await courseService.listCourses({ page: 1, limit: 12 });
-const courses = result.items;
+const page = await courseService.listCourses({ page: 1, limit: 12 });
+// Service đã lấy phần data. Danh sách nằm ở page.items.
 ```
 
-UI gọi service; không lặp URL/fetch trong component. Client trả nguyên payload thành công, không tự bỏ `.data`; feature API mô tả envelope, service unwrap. Response 204 trả `undefined`, PDF trả `Blob`, không dùng helper unwrap JSON cho hai dạng này.
+Không viết lại fetch/URL trong từng component. Backend thường trả `{ data, meta }`; service lấy `.data` một lần. Response 204 không có dữ liệu; PDF trả Blob. Đọc `ApiClientError.status`/`code` để hiển thị lỗi, giữ requestId để tra lỗi cùng backend.
 
-### Server và Client Component
+### Công nghệ dùng cho từng việc
 
-- Page/layout mặc định là Server Component. Giữ metadata và fetch công khai phù hợp ở server.
-- Form, event handler, Zustand và React Query hooks cần Client Component với `"use client"`. Đặt form con trong feature, giữ page server để export metadata nếu cần.
-- Auth store chỉ nằm trong bộ nhớ, reload sẽ mất session. Server Component không đọc được session Zustand của trình duyệt. Thống nhất chiến lược session/refresh trước khi làm protected server rendering; không dùng singleton token chung giữa các request server.
-- [Course page](<./src/app/(dashboard)/dashboard/courses/[courseId]/page.tsx>) hiện nhận `params` là Promise và `await params`; không đổi về cú pháp cũ theo trí nhớ.
-- Khi dùng coding agent, đọc [AGENTS.md](./AGENTS.md) và guide của Next.js đã cài, ví dụ `node_modules/next/dist/docs/01-app/01-getting-started/05-server-and-client-components.md`.
+| Việc                         | Dùng gì?                                                                              | Hiện trạng                                                     |
+| ---------------------------- | ------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
+| Trang và điều hướng          | Next.js App Router, TypeScript strict                                                 | Đã có                                                          |
+| CSS/icon                     | Tailwind CSS, lucide-react, clsx/tailwind-merge                                       | Đã cài                                                         |
+| Form/validation              | React Hook Form + Zod + zodResolver                                                   | Đã cài, cần tạo form                                           |
+| Dữ liệu API, tải lại sau sửa | TanStack Query                                                                        | Đã cài; TV1 tạo QueryClientProvider chung                      |
+| Phiên và bài quiz đang làm   | Zustand; persist cho bản nháp quiz                                                    | Zustand                                                        |
+| Theme ít thay đổi            | React Context                                                                         | TV1 tạo ThemeContext/ThemeProvider theo yêu cầu đề             |
+| Kéo thả chương/bài           | [dnd-kit](https://dndkit.com/react/hooks/use-sortable/)                               | Đề xuất cho TV2, chưa cài; thống nhất phiên bản trước khi dùng |
+| Markdown                     | [react-markdown](https://github.com/remarkjs/react-markdown), remark-gfm nếu cần bảng | Đề xuất cho TV4, chưa cài                                      |
+| Test                         | Vitest + React Testing Library + user-event                                           | Đã cài; coverage chưa cấu hình                                 |
 
-## 4. Cách triển khai một chức năng
+Chỉ thêm thư viện cần dùng, cập nhật lockfile và báo nhóm. Không cần thêm Redux vì đã dùng Zustand.
 
-1. Chốt use case, nhánh, owner/reviewer, màn hình và acceptance criteria. Tìm operationId trong catalog rồi kiểm tra method/path trong route manifest.
-2. Đọc controller, DTO, response thực tế; ghi input/output, token/quyền, lỗi, version, idempotency. API chưa public thì dùng fixture có ghi rõ và báo dependency backend.
-3. Định nghĩa request/response type và validation. Generic `<T>` hoặc `as T` không phải runtime validation. Các hàm đang nhận `unknown` cần kiểu cụ thể cho use case mình làm.
-4. Bổ sung feature API → service → hook/form/component → page. Thư mục `components`, `hooks`, `schemas` trong từng feature là đề xuất để tạo khi cần, chưa có sẵn.
-5. Xử lý loading/empty/error/success, disable submit trùng. Nếu dùng React Query, tạo provider trước, query key phân biệt user/resource, xóa cache khi logout/đổi tài khoản.
-6. Test hành vi, chạy checks, kiểm thử qua Gateway thật. Ghi rõ provider nào mock/thật và API nào còn bị chặn.
+### Chia component thế nào?
 
-| Tình huống  | Quy tắc frontend                                                                                                                              |
-| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| URL/quyền   | Chỉ gọi Gateway `/api/v1/...`; không gọi port nội bộ hoặc `/internal/...`. Backend quyết định quyền cuối cùng                                 |
-| Token       | Truyền access token vào service; client thêm Bearer. Không gửi role/userId để giả danh                                                        |
-| Pagination  | Đọc `{ items, page, limit, total }` sau unwrap; baseline page từ 1, limit tối đa 100, đối chiếu DTO thực tế                                   |
-| ID/query    | Encode ID trong API module, query qua options; không nối chuỗi `?` thủ công, không gửi field endpoint không nhận                              |
-| Lỗi         | Bắt `ApiClientError` theo `status`/`code`, giữ `requestId` để tra log. Network error có thể là lỗi fetch thông thường                         |
-| 401/403     | 401: refresh hoặc yêu cầu login theo chính sách; 403: không đủ quyền. Client hiện chưa tự refresh/retry                                       |
-| 409         | Đọc lại dữ liệu/version và báo conflict; không lặp mutation vô hạn                                                                            |
-| 503/504     | Hiển thị dependency lỗi/timeout, giữ input để thử lại; không biến thành dữ liệu rỗng hoặc thành công                                          |
-| Version     | Gửi expectedVersion/expectedRevision từ lần đọc gần nhất; không hard-code. DELETE course cũng cần body version                                |
-| Idempotency | Với operation yêu cầu key, retry cùng thao tác/payload giữ nguyên key; thao tác mới dùng key mới. Client hỗ trợ header nhưng chưa tự sinh key |
+Component nhỏ dùng chung đặt ở `src/components/ui/`. Header/sidebar đặt ở `src/components/layout/`. Component riêng để trong feature tương ứng. **Các thư mục component này cần tạo**, hiện chưa có bộ UI dùng sẵn.
 
-## 5. Phạm vi và hướng dẫn cho từng nhánh
+Ví dụ phần Course cần tạo thêm:
 
-| Nhánh                             | Phạm vi                                                                           | Cần phối hợp                               |
-| --------------------------------- | --------------------------------------------------------------------------------- | ------------------------------------------ |
-| `main`                            | Baseline tích hợp, nhận PR đã review                                              | CI và kiểm chứng luồng thật                |
-| `feat/shared/gateway-api-client`  | Client, envelope/error, types, provider/cache chung                               | Tất cả nhánh nghiệp vụ                     |
-| `feat/auth/login`                 | Login/session, quyền, account/profile khi mở rộng                                 | Shared, dashboard layout, caller cần token |
-| `feat/courses/catalog-enrollment` | Catalog/detail/enrollment; authoring khi mở rộng                                  | Auth, Learning; cùng dùng course page      |
-| `feat/learning/progress`          | Dashboard, nội dung học, progress/resume/access; reports/certificates khi mở rộng | Auth, Course, Quiz result/sync             |
-| `feat/quizzes/quiz-player`        | Attempt, answers/autosave, submit/result/history                                  | Backend Quiz, Gateway và Learning          |
+```text
+src/features/courses/
+  api.ts                    # Đã có: đường dẫn và request
+  types.ts                  # Kiểu riêng nếu cần
+  components/
+    course-card.tsx
+    course-form.tsx
+    curriculum-builder.tsx
+  hooks/
+    use-instructor-courses.ts
+  schemas/
+    course-form.schema.ts
+```
 
-Đây là phạm vi đề xuất theo nhánh hiện có, không phải báo cáo tính năng hoàn thành. Chốt owner/reviewer trước khi nhận việc. Ổn định shared/envelope trước; Auth và catalog có thể phát triển song song bằng fixture. Tích hợp login → catalog/detail → enroll → learning/progress → quiz khi backend sẵn sàng. Tách tính năng nâng cao thành PR riêng.
+- Page ghép các component; không đặt toàn bộ form/bảng/API/hộp thoại vào một file dài.
+- Component nhận dữ liệu/hàm xử lý qua props có kiểu. `CourseCard` nhận course và các nút phù hợp; không copy hai card gần giống nhau cho học viên/giảng viên.
+- Dùng chung Button, Field, Dialog, Tabs, Pagination, StatusBadge, EmptyState, ErrorState. Đây là tên đề xuất cần tạo, không phải component import được ngay.
+- Dialog dùng được bằng bàn phím và trả focus về nút mở. Form phải có nhãn và lỗi rõ ràng; trạng thái không chỉ thể hiện bằng màu.
+- Page/layout mặc định ở server; form, sự kiện bấm, Zustand/React Query cần `"use client"`. Giữ page có metadata ở server và tách phần tương tác thành component con. Server không đọc được Zustand trình duyệt.
 
-### 5.1. `feat/shared/gateway-api-client`
+## 5. TV1 — Tài khoản, quản lý người dùng và phần chung
 
-**Đọc:** [HTTP client](./src/lib/api-client.ts), [types](./src/lib/types.ts), [unwrap helper](./src/services/api-result.ts), [client tests](./src/lib/api-client.test.ts), [Gateway README](https://github.com/maibui7879/lms-backend/blob/main/apps/api-gateway/README.md).
+**Nhánh:** `feat/auth/login`.
 
-**Các bước làm:**
+### Cần đọc
 
-1. Giữ chuẩn URL/query, Authorization, error/requestId, 204 và Blob. Thêm test response envelope thật và failure paths trước khi đổi hành vi chung.
-2. Phối hợp Auth sửa login/refresh envelope tại feature/service. Không đổi client thành auto-unwrap mọi JSON vì các service đang unwrap sẽ bị unwrap hai lần.
-3. Khi cần React Query, bổ sung QueryClientProvider trong Client Component, ghép vào root layout; thống nhất query key và cache cleanup theo session. Provider hiện chưa có.
-4. Bổ sung types/schema theo response thực tế. Frontend không import file từ checkout backend bên cạnh hoặc đọc repo backend lúc runtime; đồng bộ contracts phải qua cách nhóm thống nhất.
-5. Nếu nhận thông báo chung, dùng [notification service](./src/services/notification.service.ts). REST wrappers đã có; Socket.IO client chưa cài/triển khai. Khi bổ sung, kết nối qua Gateway và cleanup lúc logout theo [hướng dẫn Gateway](https://github.com/maibui7879/lms-backend/blob/main/apps/api-gateway/README.md).
+- Frontend: [login page](<./src/app/(auth)/login/page.tsx>), [auth API](./src/features/auth/api.ts), [auth service](./src/services/auth.service.ts), [auth store](./src/store/auth-store.ts), [users API](./src/features/users/api.ts), [user service](./src/services/user.service.ts).
+- Phần chung: [root layout](./src/app/layout.tsx), [dashboard layout](<./src/app/(dashboard)/dashboard/layout.tsx>), [notification API](./src/features/notifications/api.ts), [notification service](./src/services/notification.service.ts).
+- Backend: [Identity README](https://github.com/maibui7879/lms-backend/blob/main/services/identity-service/README.md), [Auth controller](https://github.com/maibui7879/lms-backend/blob/main/services/identity-service/src/modules/auth/auth.controller.ts), [Users controller](https://github.com/maibui7879/lms-backend/blob/main/services/identity-service/src/modules/users/users.controller.ts), [Admin Users controller](https://github.com/maibui7879/lms-backend/blob/main/services/identity-service/src/modules/users/admin-users.controller.ts).
 
-**Nghiệm thu:** query/token/body/header đúng; lỗi 401/403/409/503/504 giữ code/requestId; 204 không parse JSON; PDF là Blob; không rò cache giữa user; wrappers hiện tại vẫn hoạt động.
+### Màn hình và component
 
-### 5.2. `feat/auth/login`
+| Màn hình                                                                                                                                                                                                  | Component cần tạo/ghép                                          |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| Đăng nhập/đăng ký/OTP/quên và đặt lại mật khẩu                                                                                                                                                            | AuthLayout, LoginForm, RegisterForm, OtpForm, PasswordResetForm |
+| [Hồ sơ cá nhân](https://www.figma.com/design/YXRuMQQZ4iqVI1RioMs2bE/Untitled?node-id=68-1564)                                                                                                             | ProfileForm, PasswordForm                                       |
+| [Xin làm giảng viên](https://www.figma.com/design/YXRuMQQZ4iqVI1RioMs2bE/Untitled?node-id=70-564), [theo dõi yêu cầu](https://www.figma.com/design/YXRuMQQZ4iqVI1RioMs2bE/Untitled?node-id=70-867)        | TeacherRequestForm, RequestStatus                               |
+| [Admin duyệt giảng viên](https://www.figma.com/design/YXRuMQQZ4iqVI1RioMs2bE/Untitled?node-id=70-1181), [hộp duyệt/từ chối](https://www.figma.com/design/YXRuMQQZ4iqVI1RioMs2bE/Untitled?node-id=70-2425) | RequestTable, RequestDetail, ConfirmDialog                      |
+| [Admin quản lý tài khoản/role](https://www.figma.com/design/YXRuMQQZ4iqVI1RioMs2bE/Untitled?node-id=71-6774)                                                                                              | UserTable, RoleDialog, AccountStatusDialog                      |
+| Thông báo theo ghi chú Figma                                                                                                                                                                              | NotificationList, NotificationItem, UnreadBadge                 |
+| Khung chung theo ảnh Teacher Dashboard                                                                                                                                                                    | AppHeader, AppSidebar, MobileNav, UserMenu, NotificationBell    |
 
-**Đọc:** [login page](<./src/app/(auth)/login/page.tsx>), [auth API](./src/features/auth/api.ts), [auth service](./src/services/auth.service.ts), [store](./src/store/auth-store.ts), [auth tests](./src/services/auth.service.test.ts), [Identity README](https://github.com/maibui7879/lms-backend/blob/main/services/identity-service/README.md), [Auth controller](https://github.com/maibui7879/lms-backend/blob/main/services/identity-service/src/modules/auth/auth.controller.ts).
+### Thứ tự làm
 
-**Lỗi tích hợp cần sửa trước:** login/refresh frontend đang khai báo `AuthSession` trực tiếp. Backend có [EnvelopeInterceptor](https://github.com/maibui7879/lms-backend/blob/main/services/identity-service/src/common/interceptors/envelope.interceptor.ts), nên HTTP trả `ApiResponse<AuthSession>`. Sửa type và unwrap đúng một lần trước `setSession`. Test hiện mock session trực tiếp nên chưa kiểm chứng wire response. README này chỉ ghi nhận việc cần làm, chưa sửa logic đó.
+1. **Sửa login/refresh trước:** frontend đọc session trực tiếp nhưng backend bọc trong `{ data, meta }` bằng [EnvelopeInterceptor](https://github.com/maibui7879/lms-backend/blob/main/services/identity-service/src/common/interceptors/envelope.interceptor.ts). Sửa response type thành `ApiResponse<AuthSession>`, lấy `.data` trước khi lưu store; test với đúng dạng response này.
+2. Làm đăng nhập → đăng ký/OTP → quên mật khẩu. Dùng React Hook Form/Zod; hiển thị lỗi backend, khóa nút khi đang gửi. Validation theo DTO thực tế, không tự đoán độ dài mật khẩu.
+3. Làm phiên để server kiểm tra được bằng cookie/session phù hợp; chặn route bằng `proxy.ts` của Next.js hiện tại, kiểm tra lại khi tải dữ liệu. Store hiện mất khi reload, chưa đủ bảo vệ route. Backend vẫn kiểm tra JWT/role/quyền sở hữu; không chỉ ẩn nút ở UI.
+4. Làm hồ sơ, yêu cầu giảng viên và Admin duyệt/đổi role/khóa tài khoản. Tự đăng ký chỉ tạo học viên. Logout phải xóa phiên/cache cả khi request backend thất bại; refresh bị từ chối thì yêu cầu login lại.
+5. Làm header/sidebar theo ảnh, menu dựa vào quyền thật, thu gọn trên điện thoại. Các nhãn Student/Admin/Teacher không được tự cấp quyền cho tài khoản.
+6. Tạo QueryClientProvider, ThemeContext và UI chung. Thống nhất props với nhóm. Thêm `usePaginatedQuery<TItem>` cho danh sách API có phân trang; giữ [useDebounce<T>](./src/hooks/use-debounce.ts) làm hook generic thứ nhất. Cả hai cần test.
+7. Thông báo có Tất cả/Chưa đọc, số chưa đọc, phân trang, đánh dấu từng mục. Chưa thêm đọc tất cả/xóa vì backend chưa hỗ trợ. Nếu nối Socket.IO, cần cài client, đi qua Gateway, chống mục trùng và tải lại sau kết nối lại.
 
-**Các bước làm:**
+**API:** `/api/v1/auth/*`, `/api/v1/users/me*`, `/api/v1/admin/users*`, `/api/v1/notifications*`; xem method/body trong code và Swagger.
 
-1. Sửa envelope, thêm regression test ở ranh giới fetch/API/service; store phải có `session.accessToken`, không lưu cả `{ data, meta }`.
-2. Làm login form bằng React Hook Form/Zod trong Client Component; gọi `authService.login`, hiển thị validation/server errors và pending, chuyển dashboard khi thành công.
-3. Bảo vệ dashboard phía UI và hiển thị trạng thái thiếu quyền. Backend vẫn phải kiểm tra token, account status, role/ownership.
-4. Chốt cách reload/session expiry vì store chưa persist. Nếu làm auto-refresh, gom các request 401 đồng thời vào một refresh, retry tối đa một lần và cập nhật refresh token mới sau rotation. Không đọc browser store từ Server Component.
-5. Nối logout và xóa cache riêng tư. Giữ `finally` hiện có: backend logout lỗi vẫn phải xóa session local.
-6. Register/OTP/reset password/profile làm task riêng. [Users API](./src/features/users/api.ts) và [user service](./src/services/user.service.ts) có wrappers nhưng chưa có UI. OAuth phải thống nhất callback/redirect với Identity; có URL bắt đầu chưa có nghĩa callback frontend đã hoàn thành.
+**Tự kiểm tra:** login đúng/sai, OTP sai, token hết hạn, logout lỗi, học viên vào URL Admin bị chặn, đổi tài khoản không thấy cache người trước. Bàn giao danh sách component chung và ví dụ props cho nhóm.
 
-API chính đã public: `POST /api/v1/auth/login`, `/refresh`, `/logout`, `/logout-all`; `GET /api/v1/users/me`. Validation đọc DTO hiện tại; baseline và RegisterDto có khác biệt giới hạn password cần owner thống nhất trước khi áp dụng lên form.
+## 6. TV2 — Khóa học, giáo trình và duyệt khóa học
 
-**Nghiệm thu:** login hợp lệ/sai mật khẩu/inactive; response envelope thật; chưa login; token hết hạn/refresh bị từ chối; logout lỗi vẫn xóa state/cache; đổi user không thấy dữ liệu user trước. Tự đăng ký không được tự cấp Admin/Instructor.
+**Nhánh:** `feat/courses/catalog-enrollment`.
 
-### 5.3. `feat/courses/catalog-enrollment`
+### Cần đọc
 
-**Đọc:** [course API](./src/features/courses/api.ts), [service](./src/services/course.service.ts), [types](./src/lib/types.ts), [course page](<./src/app/(dashboard)/dashboard/courses/[courseId]/page.tsx>), [Course README](https://github.com/maibui7879/lms-backend/blob/main/services/course-service/README.md), [Enrollment controller](https://github.com/maibui7879/lms-backend/blob/main/services/course-service/src/modules/enrollments/enrollments.controller.ts), [Course DTO](https://github.com/maibui7879/lms-backend/blob/main/packages/contracts/src/http/course.ts).
+- Frontend: [course API](./src/features/courses/api.ts), [course service](./src/services/course.service.ts), [types](./src/lib/types.ts), [course page](<./src/app/(dashboard)/dashboard/courses/[courseId]/page.tsx>), [useDebounce](./src/hooks/use-debounce.ts).
+- Backend: [Course README](https://github.com/maibui7879/lms-backend/blob/main/services/course-service/README.md), [Course DTO](https://github.com/maibui7879/lms-backend/blob/main/packages/contracts/src/http/course.ts), [Courses controller](https://github.com/maibui7879/lms-backend/blob/main/services/course-service/src/modules/courses/courses.controller.ts), [Enrollment controller](https://github.com/maibui7879/lms-backend/blob/main/services/course-service/src/modules/enrollments/enrollments.controller.ts), [Review controller](https://github.com/maibui7879/lms-backend/blob/main/services/course-service/src/modules/course-revisions/course-revisions.controller.ts).
 
-**Các bước làm:**
+### Màn hình và component
 
-1. Catalog: `listCourses` với search/filter/pagination; reset page khi đổi filter, debounce khi cần. Chốt public route catalog/detail trước khi tạo vì hiện chỉ có course page trong dashboard.
-2. Detail: `getCourse` lấy metadata công khai; `getCourseOutline` cần token. Phân biệt 404/quyền và lỗi mạng; không đưa nội dung học riêng tư ra public page.
-3. Enrollment: có token gọi `enrollInCourse`, chưa login thì đi qua Auth. Backend lấy user từ JWT; không gửi userId/instructorId từ UI. Endpoint enroll hiện không cần body nghiệp vụ, không gửi field tùy ý chỉ vì wrapper nhận `unknown`.
-4. My courses: `listMyEnrollments`, hủy bằng `cancelEnrollment`; refetch/invalidate danh sách và phối hợp Learning khi enrollment thay đổi. Thêm DTO enrollment cụ thể thay vì tự đoán generic.
-5. Authoring nếu được giao: tách PR CRUD course → chapter/lesson/item → review/revision. Bổ sung wrappers còn thiếu; dùng version server, xử lý 409 và ownership; không sửa snapshot published như draft.
+| Màn hình                                                                                                                                                                                      | Component cần tạo/ghép                                                    |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| Danh mục công khai, chi tiết, ghi danh                                                                                                                                                        | CourseCard, CourseFilters, CourseDetail, EnrollButton                     |
+| [Teacher Dashboard](https://www.figma.com/design/YXRuMQQZ4iqVI1RioMs2bE/Untitled?node-id=70-1817), theo ảnh nhóm gửi                                                                          | TeacherSummary, CourseStatusTabs, InstructorCourseCard, RecentDiscussions |
+| [Giảng viên quản lý khóa học](https://www.figma.com/design/YXRuMQQZ4iqVI1RioMs2bE/Untitled?node-id=70-2794)                                                                                   | InstructorCourseList, StatusBadge, Pagination                             |
+| [Tạo/sửa khóa học](https://www.figma.com/design/YXRuMQQZ4iqVI1RioMs2bE/Untitled?node-id=70-3350)                                                                                              | CourseForm, CourseSettings                                                |
+| [Soạn chương/bài](https://www.figma.com/design/YXRuMQQZ4iqVI1RioMs2bE/Untitled?node-id=71-7318), [panel sửa nhanh](https://www.figma.com/design/YXRuMQQZ4iqVI1RioMs2bE/Untitled?node-id=97-2) | CurriculumBuilder, ChapterRow, LessonRow, LearningItemForm, EditDrawer    |
+| Admin: hàng đợi khóa học, xem trước, duyệt/từ chối                                                                                                                                            | ReviewQueue, CoursePreview, ReviewDialog                                  |
 
-| API chính                                                       | Wrapper frontend                          |
-| --------------------------------------------------------------- | ----------------------------------------- |
-| `GET /api/v1/courses`, `GET /api/v1/courses/{id}`               | Có                                        |
-| `GET /api/v1/courses/{id}/outline`                              | Có, cần token                             |
-| `POST /api/v1/courses/{id}/enrollments`                         | Có                                        |
-| `GET /api/v1/enrollments/me`, `DELETE /api/v1/enrollments/{id}` | Có                                        |
-| CRUD course, `GET /api/v1/instructor/courses`                   | Có; UI/quyền cần triển khai               |
-| Chapters/lessons/items, review/revisions/discussions            | Gateway có route; thêm wrappers theo task |
+Danh mục công khai và Admin duyệt khóa học vẫn bắt buộc theo đề dù chưa có frame hoàn chỉnh. Dùng layout/component chung để làm các màn còn thiếu.
 
-**Nghiệm thu:** list rỗng/filter/pagination; course 404; enroll chưa login/sai quyền/đã tồn tại theo hành vi backend; cancel; double-click; update stale version. Sau enroll phải thử access và progress qua Gateway thật, không chỉ kiểm tra nút đổi trạng thái.
+### Thứ tự làm
 
-### 5.4. `feat/learning/progress`
+1. Catalog có tìm kiếm/lọc/phân trang. Ngừng gõ mới tìm kiếm. Tạo route công khai như `/courses`, `/courses/[courseId]` — đây là đề xuất cần tạo. Catalog phải render sẵn SSG/ISR theo đề, không chỉ tải bằng JavaScript trình duyệt.
+2. Làm chi tiết/ghi danh. Chưa login thì chuyển login rồi quay lại khóa học. Backend lấy người ghi danh từ JWT, không gửi userId tùy chọn từ UI.
+3. Teacher Dashboard/My Courses dùng `listInstructorCourses`. Nút thống kê sang màn TV4, nút soạn bài sang màn TV2. Dùng header/sidebar TV1, không tạo layout giống hệt lần nữa.
+4. Làm tạo/sửa khóa, rồi chương → bài → nội dung. Backend lưu **Course → Chapter → Lesson → LearningItem**; VIDEO/READING/QUIZ nằm ở LearningItem. Không gắn video trực tiếp lên Lesson vì UI gọi chung là bài.
+5. Kéo thả chương/bài bằng dnd-kit, có cách dùng bàn phím. Gửi đủ thứ tự và version theo API; request lỗi thì trả về thứ tự cũ, báo cho người dùng.
+6. Làm gửi duyệt, hàng đợi Admin, duyệt/từ chối có lý do. Hiện DRAFT/IN_REVIEW/PUBLISHED/REJECTED theo server. Gửi version cũ bị 409 thì đọc lại và báo xung đột, không âm thầm ghi đè.
+7. Màn soạn giáo trình ghép component quiz TV3 cung cấp; thống nhất props courseId/lessonId và vị trí quiz trước khi ghép.
 
-**Đọc:** [learning API](./src/features/learning/api.ts), [service](./src/services/learning.service.ts), [dashboard page](<./src/app/(dashboard)/dashboard/page.tsx>), [Learning README](https://github.com/maibui7879/lms-backend/blob/main/services/learning-service/README.md), [Learning DTO](https://github.com/maibui7879/lms-backend/blob/main/packages/contracts/src/http/learning.ts), [Progress controller](https://github.com/maibui7879/lms-backend/blob/main/services/learning-service/src/modules/progress/progress.controller.ts).
+**API:** course list/detail/create/update/delete, `/instructor/courses`, chapters/lessons/items/order, submit-review/review, enrollments. Hàm cơ bản đã có; giáo trình/duyệt cần thêm theo controller.
 
-**Các bước làm:**
+### Đọc ảnh Teacher Dashboard thế nào?
 
-1. Thêm types cụ thể cho dashboard/progress/access/resume thay các `<T>`/`unknown`. Đối chiếu contentVersion với Course/enrollment.
-2. Dashboard dùng `getDashboard`; trang học phối hợp outline Course và `getCourseProgress`, `getLessonProgress`, `getChapterAccess`. Chốt ownership course page với nhánh Course trước khi cùng sửa.
-3. Hiển thị chapter `LOCKED`/`UNLOCKED`/`COMPLETED` và reason server; không tự mở khóa theo số thứ tự hoặc phần trăm UI tính.
-4. `completeItem`/`completeLesson` gửi `{ completed: true, contentVersion }` theo DTO; không tự đánh dấu QUIZ completed từ trình duyệt. Đọc lại progress/access/dashboard sau mutation.
-5. Resume có thể trả `null`. `saveResume` gửi lessonId, learningItemId, contentVersion, positionSeconds, expectedRevision. Checkpoint đầu revision 0, lần sau dùng revision response; debounce và điều phối request tránh ghi đè vị trí mới, 409 phải đọc lại.
-6. Quiz scores, sync, certificates, mastery/recommendations và reports là task tiếp theo. Một số wrapper đã có; sync/issue certificate và một số báo cáo cần bổ sung. Không coi `progressPercent === 100` là đủ để kết luận khóa completed.
+| Phần trong ảnh                        | Cách làm                                                                                       |
+| ------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| Tổng khóa, nháp/chờ duyệt/đã xuất bản | Tính từ dữ liệu đầy đủ; số tổng không được chỉ đếm trang đầu                                   |
+| Tổng học viên                         | TV4 cung cấp dữ liệu. Tổng lượt ghi danh khác số người không trùng, phải ghi đúng nhãn         |
+| Hỏi đáp gần đây, trả lời ngay         | TV4 cung cấp component/API hỏi đáp, TV2 ghép; không dựng chức năng đọc/hữu ích khi API chưa có |
+| Student/Admin/Teacher                 | Chỉ đổi khu vực được tài khoản cho phép xem, không tạo quyền mới                               |
 
-API cốt lõi: `GET /api/v1/learning/me/dashboard`; `GET /api/v1/learning/courses/{id}/progress`, `/chapters/access`, `/resume`; `PUT /api/v1/learning/courses/{id}/resume`; `GET /api/v1/learning/lessons/{id}/progress`; `PUT /api/v1/learning/items/{id}/completion` và `PUT /api/v1/learning/lessons/{id}/completion`.
+**Tự kiểm tra:** danh sách rỗng/lọc/phân trang, ghi danh, 404/403, giảng viên không sửa khóa người khác, kéo thả lỗi, version cũ, Admin duyệt/từ chối và catalog cập nhật sau duyệt.
 
-Quiz chấm xong và Learning đồng bộ là hai trạng thái riêng. Gateway có `GET /api/v1/learning/attempts/{id}/sync`, nhưng Quiz chưa public. Khi tích hợp, hiển thị `PENDING`/`SYNCED`/`FAILED` theo receipt; không tự đổi timeout thành FAILED hoặc cộng progress ngay khi submit.
+## 7. TV3 — Câu hỏi và làm quiz
 
-**Nghiệm thu:** thiếu/canceled enrollment; chapter khóa; completion lặp; contentVersion cũ; resume null/revision conflict; đổi bài/rời trang không ghi checkpoint sai; item 100% nhưng assessment chưa đạt; dependency Course/Quiz lỗi phải hiển thị đúng.
+**Nhánh:** `feat/quizzes/quiz-player`.
 
-### 5.5. `feat/quizzes/quiz-player`
+### Cần đọc
 
-**Đọc:** [Quiz README](https://github.com/maibui7879/lms-backend/blob/main/services/quiz-service/README.md), [Quiz DTO](https://github.com/maibui7879/lms-backend/blob/main/packages/contracts/src/http/quiz.ts), [Result V2](https://github.com/maibui7879/lms-backend/blob/main/packages/contracts/src/http/quiz-result.ts), [Quiz OpenAPI](https://github.com/maibui7879/lms-backend/blob/main/packages/contracts/openapi/quiz.json), [route manifest](https://github.com/maibui7879/lms-backend/blob/main/apps/api-gateway/src/routing/implemented-routes.json).
+- Frontend: [API client](./src/lib/api-client.ts), [types](./src/lib/types.ts), [auth store](./src/store/auth-store.ts), [client tests](./src/lib/api-client.test.ts). Cần tạo feature Quiz và quiz service.
+- Backend: [Quiz README](https://github.com/maibui7879/lms-backend/blob/main/services/quiz-service/README.md), [Quiz DTO](https://github.com/maibui7879/lms-backend/blob/main/packages/contracts/src/http/quiz.ts), [Result V2](https://github.com/maibui7879/lms-backend/blob/main/packages/contracts/src/http/quiz-result.ts), [Quiz OpenAPI](https://github.com/maibui7879/lms-backend/blob/main/packages/contracts/openapi/quiz.json).
 
-**Dependency:** backend Quiz còn scaffold, Gateway chưa map quiz/course assessments. Chưa thể nghiệm thu start/save/submit thật. Không gọi thẳng port 3003 để né Gateway.
+### Màn hình và component
 
-**Làm trước bằng fixture/test adapter:**
+| Màn hình                                                                                                                     | Component cần tạo/ghép                                        |
+| ---------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
+| [Tạo quiz](https://www.figma.com/design/YXRuMQQZ4iqVI1RioMs2bE/Untitled?node-id=100-1602), danh sách quiz/câu hỏi giảng viên | QuizForm, QuizList, QuestionEditor, ChoiceEditor              |
+| [Làm quiz có giờ](https://www.figma.com/design/YXRuMQQZ4iqVI1RioMs2bE/Untitled?node-id=68-1303)                              | Quiz, Quiz.Question, Quiz.Timer, Quiz.Navigation, Quiz.Submit |
+| [Kết quả/xem lại từng lượt](https://www.figma.com/design/YXRuMQQZ4iqVI1RioMs2bE/Untitled?node-id=100-8)                      | QuizResult, AttemptHistory, AnswerReview                      |
+| Giảng viên xem tỷ lệ câu đúng/sai                                                                                            | QuestionStatsTable                                            |
 
-1. Chốt DTO delivery/attempt/Result V2; tách câu hỏi học viên khỏi authoring có đáp án. Module `src/features/quizzes/` và quiz service là phần cần tạo, chưa có trong source.
-2. Player SINGLE_CHOICE/MULTIPLE_CHOICE, chuyển câu, giữ lựa chọn và trạng thái lưu/lỗi. Fixture ghi rõ dữ liệu test, không coi là API thật.
-3. Countdown dựa `expiresAt` server, không tính deadline từ lúc mở trang. Reload phải khôi phục cùng attempt/snapshot, không tạo attempt mới hoặc shuffle lại.
-4. Autosave dùng expectedRevision, xử lý ghi tuần tự/conflict. Submit phải bảo đảm answers cuối đã lưu vì backend chấm answers đã lưu; lỗi autosave phải được xử lý trước khi nộp.
-5. Start/submit dùng Idempotency-Key theo contract; retry cùng thao tác giữ key. Điểm/passed do backend tính.
-6. Result tách attemptStatus và gradingStatus; chưa chấm thì score/maxScore/passed là null, không hiển thị điểm 0 hoặc trượt giả. Hiện đáp án/review theo policy server.
+### Thứ tự làm
 
-**Khi backend sẵn sàng:** owner triển khai controller và cập nhật Gateway manifest/Swagger; đối chiếu method/path/payload, thêm wrappers thật, chuyển adapter, chạy qua Gateway. Phối hợp Learning để hiển thị sync receipt; fixture test pass chưa đủ kết luận tích hợp.
+1. Tạo `src/features/quizzes/` và quiz service theo các feature đang có. Dùng Quiz DTO, Result V2 và Quiz OpenAPI để viết các hàm tạo quiz, lấy lượt làm, lưu đáp án, nộp bài và xem kết quả. Thống nhất request/response với người phụ trách backend Quiz.
+2. Form tạo quiz, thời lượng, số lần làm, SINGLE_CHOICE/MULTIPLE_CHOICE và lựa chọn. Đáp án đúng chỉ nằm ở phần soạn của giảng viên, không gửi cho người làm trước nộp.
+3. Trình quiz dùng **Compound Component** đúng đề: component cha giữ trạng thái, component con đọc trạng thái chung thay vì truyền cùng props qua nhiều tầng.
+4. Dùng Zustand persist giữ attemptId/lựa chọn/revision theo user và lượt làm. Reload đọc lại server, đối chiếu bản nháp, không tạo lượt mới. Không lưu đáp án đúng hoặc dùng state local tự quyết định điểm/thời gian làm bài.
+5. Đồng hồ theo expiresAt server; lưu answers với expectedRevision, báo đang lưu/lỗi. Trước nộp phải lưu xong đáp án cuối; server kiểm tra hết giờ và chấm, UI không tự cấp điểm.
+6. Start/submit dùng Idempotency-Key: gửi lại cùng thao tác giữ key để tránh trùng. Phân biệt đã nộp/đã chấm; điểm chưa có là null, không hiện điểm 0 giả.
+7. Nối kết quả với TV4: có điểm chưa chắc Learning đã cập nhật. Hiện đang cập nhật khi cần; xem đáp án/giải thích chỉ khi server cho phép.
 
-**Nghiệm thu:** không lộ answer keys; reload giữ snapshot; save conflict; submit/retry không nhân đôi; deadline server; max attempts; kết quả chưa chấm; sync chậm/lỗi; không xem attempt người khác. Các ca tích hợp chỉ đánh dấu đạt khi có provider thật.
+Cách ghép component Quiz:
 
-## 6. Git workflow và phối hợp
+```tsx
+<Quiz attempt={attempt}>
+  <Quiz.Timer />
+  <Quiz.Navigation />
+  <Quiz.Question />
+  <Quiz.Submit />
+</Quiz>
+```
 
-Ví dụ nhận catalog/enrollment, bắt đầu từ working tree sạch:
+**Tự kiểm tra:** chọn một/nhiều đáp án, chuyển câu không mất bài, reload, save lỗi/version cũ, hết giờ, nộp hai lần, không đọc được lượt người khác. Backend phải test hàm chấm điểm và các trường hợp biên; frontend không thay backend chấm bài.
+
+## 8. TV4 — Học bài, tiến độ và báo cáo
+
+**Nhánh:** `feat/learning/progress`.
+
+### Cần đọc
+
+- Frontend: [dashboard](<./src/app/(dashboard)/dashboard/page.tsx>), [course page](<./src/app/(dashboard)/dashboard/courses/[courseId]/page.tsx>), [learning API](./src/features/learning/api.ts), [learning service](./src/services/learning.service.ts), [course service](./src/services/course.service.ts).
+- Backend: [Learning README](https://github.com/maibui7879/lms-backend/blob/main/services/learning-service/README.md), [Learning DTO](https://github.com/maibui7879/lms-backend/blob/main/packages/contracts/src/http/learning.ts), [Progress controller](https://github.com/maibui7879/lms-backend/blob/main/services/learning-service/src/modules/progress/progress.controller.ts), [Reports controller](https://github.com/maibui7879/lms-backend/blob/main/services/learning-service/src/modules/instructor-reports/instructor-reports.controller.ts), [Discussion controller](https://github.com/maibui7879/lms-backend/blob/main/services/course-service/src/modules/discussions/discussions.controller.ts).
+
+### Màn hình và component
+
+| Màn hình                                                                                                                              | Component cần tạo/ghép                                                        |
+| ------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| [Student Dashboard](https://www.figma.com/design/YXRuMQQZ4iqVI1RioMs2bE/Untitled?node-id=68-3), My Learning, Progress                 | LearningCourseCard, ProgressBar, ResumeButton                                 |
+| [Học video và giáo trình](https://www.figma.com/design/YXRuMQQZ4iqVI1RioMs2bE/Untitled?node-id=68-798)                                | LessonPlayer, VideoPlayer, MarkdownContent, CurriculumSidebar, CompleteButton |
+| Hỏi đáp dưới bài                                                                                                                      | DiscussionList, DiscussionItem, ReplyForm; dùng lại ở dashboard giảng viên    |
+| [Báo cáo giảng viên](https://www.figma.com/design/YXRuMQQZ4iqVI1RioMs2bE/Untitled?node-id=100-1006), danh sách/chi tiết học viên, CSV | ReportFilters, LearnerTable, LearnerProgress, ExportCsvButton                 |
+| Admin thống kê ghi danh                                                                                                               | EnrollmentStats theo quyền API                                                |
+| [Chứng chỉ](https://www.figma.com/design/YXRuMQQZ4iqVI1RioMs2bE/Untitled?node-id=100-525), làm sau phần bắt buộc                      | CertificateCard, DownloadButton, VerifyCertificate                            |
+
+### Thứ tự làm
+
+1. My Learning/dashboard lấy khóa đã ghi danh, tiến độ và chỗ học tiếp. Course API cung cấp cấu trúc/nội dung, Learning cung cấp tiến độ; không tạo hai bộ nội dung riêng.
+2. Trang học hiện video nhúng/Markdown theo LearningItem. Dùng react-markdown; không đưa HTML tùy ý vào DOM. Backend lưu HTML thì thống nhất cách làm sạch/hiển thị, không coi HTML là Markdown.
+3. Trang học kiểm tra login/ghi danh, backend kiểm tra lại. Khóa chương/lý do khóa lấy từ API, không tự mở bài kế tiếp vì đã bấm nút UI.
+4. Complete item/bài gửi `{ completed: true, contentVersion }`, đọc lại tiến độ. Quiz hoàn thành do backend quyết định. Item 100% chưa chắc khóa completed khi quiz bắt buộc chưa đạt.
+5. Resume gửi lessonId/learningItemId/contentVersion/positionSeconds/expectedRevision. Lần đầu revision 0, lần sau dùng số server trả; bị 409 thì đọc lại. Không ghi checkpoint cũ sau khi đã chuyển bài.
+6. Hỏi đáp dùng courseId kèm lessonId, trả lời bằng parentId. API list hiện phân trang theo khóa, chưa có query lọc bài: chỉ lọc một trang frontend sẽ bỏ sót. Phối hợp backend thêm lọc theo lesson để phân trang đúng. TV2 dùng lại component/hàm này cho dashboard.
+7. Báo cáo lấy học viên/tiến độ/điểm theo khóa giảng viên sở hữu, Admin theo quyền backend. TV3 cung cấp thống kê quiz. CSV xuất dữ liệu thật được phép đọc, đủ mọi trang phù hợp bộ lọc; xử lý dấu phẩy, xuống dòng và ô bị spreadsheet hiểu là công thức. Manifest hiện chưa có route xuất CSV riêng.
+8. Làm thống kê ghi danh bắt buộc trước, rồi mới chứng chỉ PDF/gợi ý học.
+
+**Tự kiểm tra:** chưa/canceled enrollment, chương khóa, complete lặp không cộng đôi, contentVersion cũ, resume null/xung đột, hỏi đáp sai quyền, giảng viên chỉ xem khóa mình, CSV đúng bộ lọc/đủ dữ liệu. Frontend test hàm %/hiển thị biên; backend test quy tắc tiến độ thật.
+
+## 9. Yêu cầu đề bài phải có người phụ trách
+
+| Yêu cầu                                                     | Ai làm, làm ở đâu?                                                                                                                      |
+| ----------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| TypeScript strict, generic, utility type, type guard        | Tất cả: giữ [strict config](./tsconfig.json), props/API có kiểu, any phải có lý do; dùng Partial/Pick/Omit/Record và type guard phù hợp |
+| Hai custom hook generic                                     | TV1: useDebounce<T> hiện có + usePaginatedQuery<TItem> cần tạo và dùng trong danh sách, cả hai có test                                  |
+| Feature folders, React pattern                              | Mọi người để code trong feature; TV3 làm Compound Component cho Quiz, giải thích trong báo cáo                                          |
+| Zustand và Context                                          | TV1: phiên/ThemeContext; TV3: persist quiz; API dùng React Query, không copy toàn bộ sang Zustand                                       | Zustand |
+| Code splitting, memo/useMemo/useCallback có lý do           | TV3 tải quiz editor/player khi cần, TV4 tải báo cáo nặng khi cần; đo rồi tối ưu, giữ ảnh Profiler/Lighthouse trước và sau               |
+| Danh sách từ 200 dòng                                       | TV1/TV2/TV4 dùng phân trang API, không render tất cả người dùng/khóa/học viên cùng lúc                                                  |
+| Đăng ký/login, nhiều lớp bảo vệ, ít nhất hai role           | TV1 + backend; LMS làm đủ Student/Instructor/Admin. Cả nhóm thử API với tài khoản sai quyền                                             |
+| Catalog SSG/ISR; trang riêng theo phiên                     | TV2 + TV1: render sẵn catalog, kiểm tra phiên trang học/quản lý; không cache công khai dữ liệu cá nhân                                  |
+| loading/error, metadata, sitemap, robots                    | Đã có khung app; từng người bổ sung theo trang và ghi cách render vào báo cáo                                                           |
+| Ít nhất 15 test, coverage 50% logic chính                   | Mỗi người thêm ít nhất 5 test có ý nghĩa: hàm, component tương tác, API async. TV1 cấu hình coverage và CI                              |
+| Backend validation/Guard/Interceptor/Filter và test service | Đối chiếu phần backend tương ứng; ẩn nút frontend không thay kiểm tra quyền server                                                      |
+
+**Next.js của repo:** [next.config.ts](./next.config.ts) bật cacheComponents/partialPrefetching, client mặc định no-store. TV2 cần làm cache dữ liệu công khai cho catalog, không chỉ ghi ISR trong báo cáo. Đọc `node_modules/next/dist/docs/01-app/02-guides/incremental-static-regeneration-cache-components.md`; không copy cấu hình cũ. Khi sửa code Next.js, đọc [AGENTS.md](./AGENTS.md) và guide của phiên bản đã cài.
+
+**Coverage cần làm:** hiện có 10 test, chưa cấu hình coverage/ngưỡng 50%. TV1 thêm `@vitest/coverage-v8` khớp phiên bản Vitest, cấu hình thư mục logic chính trong [Vitest config](./vitest.config.mts), tính cả file chưa có test và ngưỡng tối thiểu 50%. Báo cáo số thật, không loại file khó để đạt số. Test UI bằng React Testing Library/user-event; mock API phải trả đúng dạng backend.
+
+## 10. Cách làm và gửi code
+
+Ví dụ TV2, bắt đầu từ working tree sạch:
 
 ```powershell
 git fetch origin
@@ -284,60 +308,33 @@ git pull --ff-only
 git merge origin/main
 ```
 
-Chưa có branch local thì dùng `git switch --track origin/feat/courses/catalog-enrollment`. Conflict cần xử lý cùng owner file rồi chạy lại checks; `git merge --abort` hủy merge chưa hoàn tất.
+Chưa có nhánh local thì dùng `git switch --track origin/feat/courses/catalog-enrollment`. Mỗi người commit bằng tài khoản mình để thể hiện đóng góp theo đề.
 
-Sau một task nhỏ:
+Thứ tự mỗi màn: **đọc UI/API → chia component → làm giao diện → nối service → xử lý đang tải/rỗng/lỗi → test → thử backend thật → gửi pull request**. Mock dùng phát triển/test; chức năng chính khi nộp phải dùng DB qua backend.
 
 ```powershell
 npm run check
 npm run build
 git diff --check
 git status --short
-git add -- <cac-file-cua-task>
-git diff --cached
-git commit -m "feat(courses): add catalog pagination"
-git push -u origin feat/courses/catalog-enrollment
 ```
 
-Thay `<cac-file-cua-task>` bằng file thật; stage thêm test/docs/env example/lockfile khi task đổi chúng. Mở PR base `main`, compare nhánh task. Sau khi shared/Auth merge, các nhánh phụ thuộc fetch và merge `origin/main`.
+Stage file của việc vừa làm, commit theo tính năng, push nhánh mình và mở PR về main. Sửa [client](./src/lib/api-client.ts), [types](./src/lib/types.ts), [root layout](./src/app/layout.tsx), [dashboard layout](<./src/app/(dashboard)/dashboard/layout.tsx>), [package.json](./package.json) hoặc lockfile thì báo nhóm. TV2 lo course public/authoring, TV4 lo trang học; thống nhất trước khi cùng sửa course page hiện có.
 
-Không push tính năng sang mọi nhánh. Lần đồng bộ baseline trước đây là khởi tạo; task mới đi qua PR. Review chung khi sửa [client](./src/lib/api-client.ts), [types](./src/lib/types.ts), [root layout](./src/app/layout.tsx), [dashboard layout](<./src/app/(dashboard)/dashboard/layout.tsx>), [package.json](./package.json) hoặc lockfile.
+- `npm run lint` / `npm run lint:fix`: kiểm tra/tự sửa lint.
+- `npm run format` / `npm run format:check`: sửa/chỉ kiểm tra format.
+- `npm test` / `npm run test:watch`: chạy test một lần/theo dõi khi code.
+- `npm run check`: lint + format + test, chưa có build.
+- Husky kiểm tra file staged trước commit, chạy test trước push; cài dependencies sẽ bật hook. Checkout cũ cần bật lại thì chạy `npm run prepare`.
+- [CI hiện tại](./.github/workflows/ci.yml) chạy lint/format/test trên push/PR, chưa có build/coverage. TV1 bổ sung coverage theo phần trên.
 
-Lịch sử từng được viết lại để gỡ attribution Copilot. Clone cũ cần kiểm tra divergence, bảo toàn việc chưa push trước khi đồng bộ; không force-push lịch sử cũ trở lại remote.
+Trước gửi PR: đủ màn được giao, dùng được trên điện thoại, có loading/rỗng/lỗi, API kiểm tra quyền thật, checks pass. Ghi rõ màn chưa nối backend; không ghi hoàn thành khi mới dùng mock.
 
-## 7. Kiểm thử, CI và điều kiện hoàn thành
+## 11. Chuẩn bị nộp bài
 
-| Lệnh                   | Tác dụng                                                                |
-| ---------------------- | ----------------------------------------------------------------------- |
-| `npm run lint`         | ESLint toàn dự án; warning cũng làm thất bại                            |
-| `npm run lint:fix`     | Tự sửa lỗi lint hỗ trợ                                                  |
-| `npm run format`       | Prettier ghi định dạng                                                  |
-| `npm run format:check` | Kiểm tra format, không sửa                                              |
-| `npm test`             | Chạy toàn bộ Vitest một lần                                             |
-| `npm run test:watch`   | Test watch khi phát triển                                               |
-| `npm run check`        | Lint → format:check → test                                              |
-| `npm run build`        | Build riêng; chưa nằm trong check/CI                                    |
-| `npm run prepare`      | Kích hoạt lại Husky sau khi pull setup vào checkout đã cài dependencies |
+- Repo theo tên `<MãNhóm>_LTWNC_CuoiKy` hoặc thống nhất đường dẫn nộp với giảng viên; README có cách chạy, tài khoản demo từng role, lệnh seed thật. Demo/seed hiện cần bổ sung sau khi kiểm chứng.
+- Báo cáo PDF tối đa **20 trang nội dung**: bảng quyền, cách render từng trang, lý do chọn state/pattern, ảnh UI, hiệu năng trước/sau, test/coverage, việc và % đóng góp từng người.
+- Video **5–10 phút**: đăng ký/login → giảng viên tạo chương/bài/quiz → Admin duyệt → học viên ghi danh/học/quiz → xem tiến độ → giảng viên xem báo cáo/xuất CSV. Chỉ demo phần đã chạy, nêu phần chưa hoàn thành.
+- Link triển khai là phần khuyến khích; không ghi đã deploy/đạt đủ đề khi chưa kiểm tra.
 
-Test đặt cạnh code dạng `*.test.ts(x)`/`*.spec.ts(x)` trong source. Vitest mặc định jsdom; [client test](./src/lib/api-client.test.ts) dùng annotation môi trường Node. Chạy riêng:
-
-```powershell
-npm test -- src/lib/api-client.test.ts
-npm test -- src/services/auth.service.test.ts
-```
-
-[Auth tests](./src/services/auth.service.test.ts) mock API, [client tests](./src/lib/api-client.test.ts) mock fetch; không gọi backend thật. Thêm test hành vi thành công, validation/quyền, conflict và dependency tương ứng. Test response envelope thật ở ranh giới dữ liệu thay vì chỉ mock kiểu mong muốn. Async Server Component cần cách kiểm thử phù hợp; không mặc định render mọi async page trực tiếp bằng Vitest.
-
-[Pre-commit](./.husky/pre-commit) chạy lint-staged: ESLint fix + Prettier cho source staged, Prettier cho tài liệu/config hỗ trợ; fix được stage lại, lỗi còn lại chặn commit. [Pre-push](./.husky/pre-push) chạy toàn bộ test. `npm ci`/`npm install` kích hoạt hooks qua prepare.
-
-[CI](./.github/workflows/ci.yml) có ba job độc lập lint/format:check/test trên mọi push/PR, hỗ trợ chạy tay; Node 24, npm ci, HUSKY=0. Unit tests hiện không cần backend/secrets. [Prettier ignore](./.prettierignore) bỏ qua output sinh, lockfile và hướng dẫn agent.
-
-Một task sẵn sàng merge khi:
-
-- Đúng scope, route/DTO/quyền đối chiếu backend; ghi rõ API chưa public.
-- Có pending/empty/error/success, dữ liệu riêng tư theo đúng session.
-- Có test hành vi cần thiết; lint/format/test pass; kiểm tra build khi sửa ứng dụng.
-- Task tích hợp đã chạy qua Gateway bằng tài khoản đúng quyền; ghi provider thật/fixture và giới hạn còn lại.
-- PR nêu chức năng, phần chung ảnh hưởng, lệnh kiểm thử; cập nhật docs/env example khi cần.
-
-README thuần túy chỉ cần kiểm tra nội dung, links, format và diff; không cần chạy lại toàn bộ business tests.
+Đây là tài liệu giao việc. Các bước cần làm chưa được triển khai chỉ bằng việc cập nhật README.
