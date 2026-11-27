@@ -35,10 +35,7 @@ export type ApiError = {
 };
 
 export type CourseLevel =
-  | "BEGINNER"
-  | "INTERMEDIATE"
-  | "ADVANCED"
-  | "ALL_LEVELS";
+  "BEGINNER" | "INTERMEDIATE" | "ADVANCED" | "ALL_LEVELS";
 
 export interface Course {
   id: string;
@@ -110,4 +107,4 @@ export interface PageQuery {
 
 export interface AuthenticatedRequest {
   accessToken: string;
-};
+}

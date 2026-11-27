@@ -18,10 +18,7 @@ export interface Notification {
 }
 
 export const notificationsApi = {
-  list(
-    accessToken: string,
-    query?: PageQuery & { unreadOnly?: boolean },
-  ) {
+  list(accessToken: string, query?: PageQuery & { unreadOnly?: boolean }) {
     return authenticatedApiRequest<ApiResponse<PageData<Notification>>>(
       "/api/v1/notifications",
       { accessToken, query },

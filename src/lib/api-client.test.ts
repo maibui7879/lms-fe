@@ -46,15 +46,15 @@ describe("Gateway API client", () => {
       }),
     );
 
-    const result = await apiRequest<{ data: { id: string } }, { title: string }>(
-      "/api/v1/courses",
-      {
-        method: "POST",
-        body: { title: "TypeScript" },
-        accessToken: "access-token",
-        idempotencyKey: "create-course-1",
-      },
-    );
+    const result = await apiRequest<
+      { data: { id: string } },
+      { title: string }
+    >("/api/v1/courses", {
+      method: "POST",
+      body: { title: "TypeScript" },
+      accessToken: "access-token",
+      idempotencyKey: "create-course-1",
+    });
 
     expect(result.data.id).toBe("course-1");
     expect(fetchMock).toHaveBeenCalledWith(
@@ -124,9 +124,11 @@ describe("Gateway API client", () => {
   });
 
   it("requires a token for protected feature requests", () => {
-    expect(() => authenticatedApiRequest("/api/v1/admin/users", {
-      accessToken: "",
-    })).toThrow(ApiClientError);
+    expect(() =>
+      authenticatedApiRequest("/api/v1/admin/users", {
+        accessToken: "",
+      }),
+    ).toThrow(ApiClientError);
     expect(fetchMock).not.toHaveBeenCalled();
   });
 

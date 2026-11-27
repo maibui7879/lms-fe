@@ -3,27 +3,19 @@ import { unwrapApiResponse } from "./api-result";
 
 export const userService = {
   async getCurrentUser<T>(accessToken: string) {
-    return unwrapApiResponse(
-      usersApi.getMe<T>(accessToken),
-    );
+    return unwrapApiResponse(usersApi.getMe<T>(accessToken));
   },
 
   async updateCurrentUser<T>(accessToken: string, input: unknown) {
-    return unwrapApiResponse(
-      usersApi.updateMe<T>(accessToken, input),
-    );
+    return unwrapApiResponse(usersApi.updateMe<T>(accessToken, input));
   },
 
   async getMyProfile<T>(accessToken: string) {
-    return unwrapApiResponse(
-      usersApi.getProfile<T>(accessToken),
-    );
+    return unwrapApiResponse(usersApi.getProfile<T>(accessToken));
   },
 
   async updateMyProfile<T>(accessToken: string, input: unknown) {
-    return unwrapApiResponse(
-      usersApi.updateProfile<T>(accessToken, input),
-    );
+    return unwrapApiResponse(usersApi.updateProfile<T>(accessToken, input));
   },
 
   deleteMyProfile(accessToken: string) {
@@ -39,24 +31,18 @@ export const userService = {
   },
 
   async getMyRoleRequests<T>(accessToken: string) {
-    return unwrapApiResponse(
-      usersApi.getRoleRequests<T>(accessToken),
-    );
+    return unwrapApiResponse(usersApi.getRoleRequests<T>(accessToken));
   },
 
   async requestRole<T>(accessToken: string, input: unknown) {
-    return unwrapApiResponse(
-      usersApi.createRoleRequest<T>(accessToken, input),
-    );
+    return unwrapApiResponse(usersApi.createRoleRequest<T>(accessToken, input));
   },
 
   async listUsers<T>(
     accessToken: string,
     query?: Record<string, string | number>,
   ) {
-    return unwrapApiResponse(
-      adminUsersApi.list<T>(accessToken, query),
-    );
+    return unwrapApiResponse(adminUsersApi.list<T>(accessToken, query));
   },
 
   async changeUserRole<T>(
@@ -69,11 +55,7 @@ export const userService = {
     },
   ) {
     return unwrapApiResponse(
-      adminUsersApi.updateRole<T>(
-        accessToken,
-        userId,
-        input,
-      ),
+      adminUsersApi.updateRole<T>(accessToken, userId, input),
     );
   },
 
@@ -83,11 +65,7 @@ export const userService = {
     input: { status: "ACTIVE" | "INACTIVE"; expectedVersion: number },
   ) {
     return unwrapApiResponse(
-      adminUsersApi.updateStatus<T>(
-        accessToken,
-        userId,
-        input,
-      ),
+      adminUsersApi.updateStatus<T>(accessToken, userId, input),
     );
   },
 };

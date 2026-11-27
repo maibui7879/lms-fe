@@ -3,10 +3,9 @@ import type { ApiResponse } from "@/lib/types";
 
 export const usersApi = {
   getMe<T>(accessToken: string) {
-    return authenticatedApiRequest<ApiResponse<T>>(
-      "/api/v1/users/me",
-      { accessToken },
-    );
+    return authenticatedApiRequest<ApiResponse<T>>("/api/v1/users/me", {
+      accessToken,
+    });
   },
 
   updateMe<T>(accessToken: string, input: unknown) {
@@ -17,10 +16,9 @@ export const usersApi = {
   },
 
   getProfile<T>(accessToken: string) {
-    return authenticatedApiRequest<ApiResponse<T>>(
-      "/api/v1/users/me/profile",
-      { accessToken },
-    );
+    return authenticatedApiRequest<ApiResponse<T>>("/api/v1/users/me/profile", {
+      accessToken,
+    });
   },
 
   updateProfile<T>(accessToken: string, input: unknown) {
@@ -31,17 +29,17 @@ export const usersApi = {
   },
 
   deleteProfile(accessToken: string) {
-    return authenticatedApiRequest<void>(
-      "/api/v1/users/me/profile",
-      { accessToken, method: "DELETE" },
-    );
+    return authenticatedApiRequest<void>("/api/v1/users/me/profile", {
+      accessToken,
+      method: "DELETE",
+    });
   },
 
   deactivateMe(accessToken: string) {
-    return authenticatedApiRequest<void>(
-      "/api/v1/users/me",
-      { accessToken, method: "DELETE" },
-    );
+    return authenticatedApiRequest<void>("/api/v1/users/me", {
+      accessToken,
+      method: "DELETE",
+    });
   },
 
   updatePassword(accessToken: string, input: unknown) {
@@ -72,13 +70,10 @@ export const usersApi = {
 
 export const adminUsersApi = {
   list<T>(accessToken: string, query?: Record<string, string | number>) {
-    return authenticatedApiRequest<ApiResponse<T>>(
-      "/api/v1/admin/users",
-      {
-        accessToken,
-        query,
-      },
-    );
+    return authenticatedApiRequest<ApiResponse<T>>("/api/v1/admin/users", {
+      accessToken,
+      query,
+    });
   },
 
   listAudits<T>(accessToken: string, userId: string, query?: object) {
@@ -91,7 +86,11 @@ export const adminUsersApi = {
   updateRole<T>(
     accessToken: string,
     userId: string,
-    input: { role: "ADMIN" | "INSTRUCTOR" | "STUDENT"; reason: string; expectedVersion: number },
+    input: {
+      role: "ADMIN" | "INSTRUCTOR" | "STUDENT";
+      reason: string;
+      expectedVersion: number;
+    },
   ) {
     return authenticatedApiRequest<ApiResponse<T>, typeof input>(
       `/api/v1/admin/users/${encodeURIComponent(userId)}/role`,

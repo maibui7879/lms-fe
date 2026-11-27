@@ -41,8 +41,21 @@ internal Quiz service directly from the frontend.
 
 ## Checks
 
+Use Node.js 24 and install dependencies with `npm ci`, matching CI.
+Run all quality checks locally with `npm run check`, or individually:
+
 ```bash
 npm run lint
+npm run format:check
 npm test
 npm run build
 ```
+
+Run `npm run format` to format the project and `npm run lint:fix` to apply
+automatic ESLint fixes. Prettier skips generated output, the npm lockfile, and
+the Next.js-managed agent instructions.
+
+GitHub Actions runs lint, formatting checks, and the full existing Vitest suite
+as independent jobs on every push and pull request. The workflow can also be
+started manually. Tests use mocked API requests and do not require a running
+backend or secrets. The build command remains a separate local check.

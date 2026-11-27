@@ -7,26 +7,16 @@ export const notificationService = {
     accessToken: string,
     query?: PageQuery & { unreadOnly?: boolean },
   ) {
-    return unwrapApiResponse(
-      notificationsApi.list(accessToken, query),
-    );
+    return unwrapApiResponse(notificationsApi.list(accessToken, query));
   },
 
   async getUnreadCount(accessToken: string) {
-    return unwrapApiResponse(
-      notificationsApi.getUnreadCount(accessToken),
-    );
+    return unwrapApiResponse(notificationsApi.getUnreadCount(accessToken));
   },
 
-  async markNotificationAsRead(
-    accessToken: string,
-    notificationId: string,
-  ) {
+  async markNotificationAsRead(accessToken: string, notificationId: string) {
     return unwrapApiResponse(
-      notificationsApi.markAsRead(
-        accessToken,
-        notificationId,
-      ),
+      notificationsApi.markAsRead(accessToken, notificationId),
     );
   },
 };

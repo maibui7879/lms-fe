@@ -54,7 +54,9 @@ function isQueryValue(value: unknown): value is QueryValue {
 }
 
 function isStringArray(value: unknown): value is string[] {
-  return Array.isArray(value) && value.every((item) => typeof item === "string");
+  return (
+    Array.isArray(value) && value.every((item) => typeof item === "string")
+  );
 }
 
 function getApiBaseUrl(): string {
@@ -64,10 +66,7 @@ function getApiBaseUrl(): string {
   );
 }
 
-export function buildApiUrl(
-  path: string,
-  query?: object,
-): URL {
+export function buildApiUrl(path: string, query?: object): URL {
   let decodedPath: string;
   try {
     decodedPath = decodeURIComponent(path);
@@ -89,7 +88,10 @@ export function buildApiUrl(
   }
 
   const url = new URL(path, `${getApiBaseUrl()}/`);
-  for (const [key, value] of Object.entries(query ?? {}) as [string, unknown][]) {
+  for (const [key, value] of Object.entries(query ?? {}) as [
+    string,
+    unknown,
+  ][]) {
     if (!isQueryValue(value)) {
       throw new TypeError(`Invalid query parameter: ${key}`);
     }
@@ -212,7 +214,8 @@ export async function apiRequest<TResponse = unknown, TBody = unknown>(
     const message = Array.isArray(error.message)
       ? error.message.join(", ")
       : error.message;
-    const meta = isRecord(payload) && isRecord(payload.meta) ? payload.meta : {};
+    const meta =
+      isRecord(payload) && isRecord(payload.meta) ? payload.meta : {};
     const payloadRequestId =
       isRecord(payload) && typeof payload.requestId === "string"
         ? payload.requestId
@@ -223,7 +226,9 @@ export async function apiRequest<TResponse = unknown, TBody = unknown>(
       response.status,
       error.code,
       response.headers.get("x-request-id") ??
-        (typeof meta.requestId === "string" ? meta.requestId : payloadRequestId),
+        (typeof meta.requestId === "string"
+          ? meta.requestId
+          : payloadRequestId),
       error.details,
       payload,
     );
@@ -232,10 +237,7 @@ export async function apiRequest<TResponse = unknown, TBody = unknown>(
   return payload as TResponse;
 }
 
-export function authenticatedApiRequest<
-  TResponse = unknown,
-  TBody = unknown,
->(
+export function authenticatedApiRequest<TResponse = unknown, TBody = unknown>(
   path: string,
   options: ApiRequestOptions<TBody> & { accessToken: string },
 ): Promise<TResponse> {

@@ -3,9 +3,7 @@ import { unwrapApiResponse } from "./api-result";
 
 export const learningService = {
   async getDashboard<T>(accessToken: string) {
-    return unwrapApiResponse(
-      learningApi.getDashboard<T>(accessToken),
-    );
+    return unwrapApiResponse(learningApi.getDashboard<T>(accessToken));
   },
 
   async getCourseProgress<T>(accessToken: string, courseId: string) {
@@ -30,42 +28,28 @@ export const learningService = {
     );
   },
 
-  async completeItem<T>(
-    accessToken: string,
-    itemId: string,
-    input: unknown,
-  ) {
+  async completeItem<T>(accessToken: string, itemId: string, input: unknown) {
     return unwrapApiResponse(
       learningApi.completeItem<T>(accessToken, itemId, input),
     );
   },
 
   async getResume<T>(accessToken: string, courseId: string) {
-    return unwrapApiResponse(
-      learningApi.getResume<T>(accessToken, courseId),
-    );
+    return unwrapApiResponse(learningApi.getResume<T>(accessToken, courseId));
   },
 
-  async saveResume<T>(
-    accessToken: string,
-    courseId: string,
-    input: unknown,
-  ) {
+  async saveResume<T>(accessToken: string, courseId: string, input: unknown) {
     return unwrapApiResponse(
       learningApi.saveResume<T>(accessToken, courseId, input),
     );
   },
 
   async getRecommendations<T>(accessToken: string) {
-    return unwrapApiResponse(
-      learningApi.getRecommendations<T>(accessToken),
-    );
+    return unwrapApiResponse(learningApi.getRecommendations<T>(accessToken));
   },
 
   async getMyCertificates<T>(accessToken: string) {
-    return unwrapApiResponse(
-      learningApi.getMyCertificates<T>(accessToken),
-    );
+    return unwrapApiResponse(learningApi.getMyCertificates<T>(accessToken));
   },
 
   downloadCertificate(accessToken: string, certificateId: string) {
@@ -76,11 +60,7 @@ export const learningService = {
     return unwrapApiResponse(learningApi.verifyCertificate<T>(code));
   },
 
-  async getQuizScores<T>(
-    accessToken: string,
-    courseId: string,
-    mine = true,
-  ) {
+  async getQuizScores<T>(accessToken: string, courseId: string, mine = true) {
     return unwrapApiResponse(
       learningApi.getQuizScores<T>(accessToken, courseId, mine),
     );

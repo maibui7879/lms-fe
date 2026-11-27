@@ -1,9 +1,5 @@
 import { coursesApi } from "@/features/courses/api";
-import type {
-  Course,
-  CourseQuery,
-  CreateCourseInput,
-} from "@/lib/types";
+import type { Course, CourseQuery, CreateCourseInput } from "@/lib/types";
 import { unwrapApiResponse } from "./api-result";
 
 export const courseService = {
@@ -16,18 +12,14 @@ export const courseService = {
   },
 
   async getCourseOutline<T>(accessToken: string, courseId: string): Promise<T> {
-    return unwrapApiResponse(
-      coursesApi.getOutline<T>(courseId, accessToken),
-    );
+    return unwrapApiResponse(coursesApi.getOutline<T>(courseId, accessToken));
   },
 
   async createCourse(
     accessToken: string,
     input: CreateCourseInput,
   ): Promise<Course> {
-    return unwrapApiResponse(
-      coursesApi.create(accessToken, input),
-    );
+    return unwrapApiResponse(coursesApi.create(accessToken, input));
   },
 
   async updateCourse(
@@ -35,9 +27,7 @@ export const courseService = {
     courseId: string,
     input: Partial<CreateCourseInput> & { expectedVersion: number },
   ): Promise<Course> {
-    return unwrapApiResponse(
-      coursesApi.update(accessToken, courseId, input),
-    );
+    return unwrapApiResponse(coursesApi.update(accessToken, courseId, input));
   },
 
   deleteCourse(accessToken: string, courseId: string, expectedVersion: number) {
