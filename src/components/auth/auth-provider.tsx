@@ -11,6 +11,7 @@ import { authService, clearClientSession } from "@/services/auth.service";
 import { useAuthStore } from "@/store/auth-store";
 import { useRouter } from "next/navigation";
 import { safeReturnPath } from "@/lib/auth-path";
+import { isPublicDashboardPath } from "@/route/paths";
 import type { AuthUser } from "@/lib/types";
 
 interface AuthContextValue {
@@ -49,7 +50,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setError(null);
       if (
         window.location.pathname.startsWith("/dashboard") &&
-        window.location.pathname !== "/dashboard/explore"
+        !isPublicDashboardPath(window.location.pathname)
       ) {
         router.replace(
           `/login?next=${encodeURIComponent(safeReturnPath(window.location.pathname + window.location.search))}`,
@@ -99,14 +100,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         reloadSession,
       }}
     >
-      {error && (
-        <div role="alert" className="auth-session-error">
-          {error}{" "}
-          <button type="button" onClick={reloadSession}>
-            Thử lại
-          </button>
-        </div>
-      )}
       {children}
     </AuthContext.Provider>
   );

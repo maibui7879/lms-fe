@@ -3,6 +3,7 @@ import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { AuthProvider, useAuth } from "./auth-provider";
+import { ExploreGuestGate } from "./explore-guest-gate";
 import { authRequest } from "@/lib/auth-client";
 import { ApiClientError } from "@/lib/api-client";
 import { useAuthStore } from "@/store/auth-store";
@@ -28,14 +29,32 @@ function Consumer() {
 }
 beforeEach(() => {
   vi.mocked(authRequest).mockReset();
+  router.replace.mockClear();
+  router.refresh.mockClear();
   useAuthStore.setState({ session: null, loading: true });
 });
 afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();
+  window.history.replaceState({}, "", "/");
 });
 
 describe("AuthProvider", () => {
+  it("redirects a session restored on explore back to dashboard", async () => {
+    window.history.replaceState({}, "", "/dashboard/explore");
+    vi.mocked(authRequest).mockResolvedValueOnce(identity);
+    render(
+      <AuthProvider>
+        <ExploreGuestGate>
+          <Consumer />
+        </ExploreGuestGate>
+      </AuthProvider>,
+    );
+    await waitFor(() =>
+      expect(router.replace).toHaveBeenCalledWith("/dashboard"),
+    );
+    expect(router.refresh).toHaveBeenCalled();
+  });
   it("clears another tab on logout without restoring its cookie session", async () => {
     const channels: { onmessage: ((event: MessageEvent) => void) | null }[] =
       [];

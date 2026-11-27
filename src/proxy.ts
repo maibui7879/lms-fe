@@ -1,11 +1,12 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { isPublicDashboardPath, paths } from "@/route/paths";
 
 export function proxy(request: NextRequest) {
-  if (request.nextUrl.pathname === "/dashboard/explore")
+  if (isPublicDashboardPath(request.nextUrl.pathname))
     return NextResponse.next();
   if (!request.cookies.has("lms_access")) {
     const url = new URL(
-      request.cookies.has("lms_refresh") ? "/auth/restore" : "/login",
+      request.cookies.has("lms_refresh") ? paths.restoreSession : paths.login,
       request.url,
     );
     url.searchParams.set(

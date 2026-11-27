@@ -9,15 +9,25 @@ import {
   ShieldCheck,
   Users,
   UserRoundCheck,
+  UserRound,
+  Bell,
   type LucideIcon,
 } from "lucide-react";
 import type { UserRole } from "@/lib/types";
+import { paths } from "./paths";
 
 export interface NavigationItem {
   title: string;
   href: string;
   description: string;
   icon: LucideIcon;
+}
+
+export interface DashboardRoute extends NavigationItem {
+  public?: boolean;
+  roles?: readonly UserRole[];
+  sidebarRoles?: readonly UserRole[];
+  guestSidebar?: boolean;
 }
 
 export const roleLabels: Record<UserRole, string> = {
@@ -28,14 +38,14 @@ export const roleLabels: Record<UserRole, string> = {
 
 const overview: NavigationItem = {
   title: "Tổng quan",
-  href: "/dashboard",
+  href: paths.dashboard,
   description: "Không gian làm việc của bạn.",
   icon: LayoutDashboard,
 };
 
 const explore: NavigationItem = {
   title: "Khám phá khóa học",
-  href: "/dashboard/explore",
+  href: paths.explore,
   description: "Tìm khóa học phù hợp với mục tiêu của bạn.",
   icon: LibraryBig,
 };
@@ -43,7 +53,6 @@ const explore: NavigationItem = {
 const navigationByRole: Record<UserRole, NavigationItem[]> = {
   STUDENT: [
     overview,
-    explore,
     {
       title: "Khóa học của tôi",
       href: "/dashboard/my-learning",
@@ -131,15 +140,81 @@ const navigationByRole: Record<UserRole, NavigationItem[]> = {
   ],
 };
 
+// Each menu item is declared above once. Derive access rules from the same
+// role groups so sidebar and server guards cannot drift apart.
+const sidebarRoutes = new Map<string, DashboardRoute>();
+for (const role of Object.keys(navigationByRole) as UserRole[]) {
+  for (const item of navigationByRole[role]) {
+    const existing = sidebarRoutes.get(item.href);
+    const roles = [...(existing?.sidebarRoles ?? []), role];
+    sidebarRoutes.set(item.href, {
+      ...item,
+      roles,
+      sidebarRoles: roles,
+      public: item.href === paths.explore,
+      guestSidebar: item.href === paths.explore,
+    });
+  }
+}
+
+export const dashboardRoutes: readonly DashboardRoute[] = [
+  ...sidebarRoutes.values(),
+  { ...explore, public: true, guestSidebar: true },
+  {
+    title: "Hồ sơ tài khoản",
+    href: paths.profile,
+    description: "Quản lý thông tin tài khoản của bạn.",
+    icon: UserRound,
+  },
+  {
+    title: "Thông báo",
+    href: paths.notifications,
+    description: "Thông báo dành cho tài khoản của bạn.",
+    icon: Bell,
+  },
+];
+
+export const overviewTitles: Record<UserRole, string> = {
+  STUDENT: "Tổng quan học tập",
+  INSTRUCTOR: "Tổng quan giảng viên",
+  ADMIN: "Tổng quan quản trị",
+};
+
+export const courseDetailRoute: DashboardRoute = {
+  public: true,
+  title: "Khóa học",
+  href: "/dashboard/courses/[courseId]",
+  description: "Nội dung khóa học.",
+  icon: BookOpen,
+};
+
+export function getDashboardRoute(href: string) {
+  return (
+    dashboardRoutes.find((route) => route.href === href) ??
+    (/^\/dashboard\/courses\/[^/]+$/.test(href) ? courseDetailRoute : undefined)
+  );
+}
+
+export function canAccessDashboardRoute(
+  route: DashboardRoute,
+  role: UserRole | null,
+) {
+  return (
+    !!route.public || (!!role && (!route.roles || route.roles.includes(role)))
+  );
+}
+
 export function getDashboardNavigation(
   role: UserRole | null,
-): NavigationItem[] {
-  return role ? navigationByRole[role] : [overview, explore];
+): readonly DashboardRoute[] {
+  return dashboardRoutes.filter((route) =>
+    role ? route.sidebarRoles?.includes(role) : route.guestSidebar,
+  );
 }
 
 export function isNavigationActive(pathname: string, href: string): boolean {
   return (
     pathname === href ||
-    (href !== "/dashboard" && pathname.startsWith(`${href}/`))
+    (href !== paths.dashboard && pathname.startsWith(`${href}/`))
   );
 }

@@ -1,5 +1,5 @@
 import { cookies } from "next/headers";
-import { NextResponse, type NextRequest } from "next/server";
+import { connection, NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
 import type { AuthUser } from "./types";
 
@@ -198,6 +198,7 @@ export async function rotateSession(
 }
 
 export async function serverUser() {
+  await connection();
   const jar = await cookies();
   assertSessionDeployment();
   if (isRevoked(jar.get(REFRESH_COOKIE)?.value))

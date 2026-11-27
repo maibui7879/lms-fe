@@ -3,56 +3,45 @@
 import Link from "next/link";
 import { ArrowRight, BookOpen, LayoutDashboard } from "lucide-react";
 import { useAuthStore } from "@/store/auth-store";
-import { getDashboardNavigation, roleLabels } from "./dashboard-navigation";
+import {
+  canAccessDashboardRoute,
+  getDashboardNavigation,
+  getDashboardRoute,
+  overviewTitles,
+  paths,
+} from "@/route";
 
-export function DashboardSection({ href = "/dashboard" }: { href?: string }) {
+export function DashboardSection({
+  href = paths.dashboard,
+}: {
+  href?: string;
+}) {
   const session = useAuthStore((state) => state.session);
   const role = session?.user.role ?? null;
   const navigation = getDashboardNavigation(role);
-  const item = navigation.find((entry) => entry.href === href);
-  const commonTitle =
-    href === "/dashboard/profile"
-      ? "Hồ sơ tài khoản"
-      : href === "/dashboard/notifications"
-        ? "Thông báo"
-        : null;
-  const allowed = !!item || (!!session && !!commonTitle);
-  const isOverview = href === "/dashboard";
+  const item = getDashboardRoute(href);
+  const allowed = !!item && canAccessDashboardRoute(item, role);
+  const isOverview = href === paths.dashboard;
   const title = !allowed
     ? "Không thể mở trang này"
     : isOverview
-      ? role === "INSTRUCTOR"
-        ? "Tổng quan giảng viên"
-        : role === "ADMIN"
-          ? "Tổng quan quản trị"
-          : role === "STUDENT"
-            ? "Tổng quan học tập"
-            : "Chào mừng đến Lumina LMS"
-      : item?.title || commonTitle;
+      ? role
+        ? overviewTitles[role]
+        : "Tổng quan"
+      : item?.title;
   const Icon = item?.icon || LayoutDashboard;
 
   return (
     <div className="dashboard-page">
       <div className="dashboard-page-heading">
-        <span className="dashboard-eyebrow">
-          <span aria-hidden="true" />
-          {role ? roleLabels[role] : "Lumina LMS"}
-        </span>
         <h1>{title}</h1>
-        <p>
-          {!allowed
-            ? "Đăng nhập bằng tài khoản có quyền phù hợp để tiếp tục."
-            : isOverview
-              ? session
-                ? "Truy cập các công việc của bạn từ menu bên trái hoặc chọn mục bên dưới."
-                : "Khám phá khóa học và đăng nhập để mở không gian của bạn."
-              : item?.description ||
-                "Quản lý thông tin trong không gian của bạn."}
-        </p>
+        {!allowed && (
+          <p>Đăng nhập bằng tài khoản có quyền phù hợp để tiếp tục.</p>
+        )}
       </div>
       {!allowed ? (
         <Link
-          href={session ? "/dashboard" : "/login"}
+          href={session ? paths.dashboard : paths.login}
           className="dashboard-text-link"
         >
           {session ? "Về tổng quan" : "Đăng nhập"}
@@ -64,14 +53,11 @@ export function DashboardSection({ href = "/dashboard" }: { href?: string }) {
           aria-labelledby="dashboard-start-title"
         >
           <div className="dashboard-section-heading">
-            <h2 id="dashboard-start-title">
-              {role ? "Trong không gian của bạn" : "Bắt đầu tại đây"}
-            </h2>
-            <span>Chọn một mục để tiếp tục</span>
+            <h2 id="dashboard-start-title">Điều hướng</h2>
           </div>
           <div className="dashboard-destination-list">
             {navigation
-              .filter((entry) => entry.href !== "/dashboard")
+              .filter((entry) => entry.href !== paths.dashboard)
               .map(
                 ({
                   title: label,
@@ -100,13 +86,12 @@ export function DashboardSection({ href = "/dashboard" }: { href?: string }) {
                 ),
               )}
             {!session && (
-              <Link href="/login" className="dashboard-destination">
+              <Link href={paths.login} className="dashboard-destination">
                 <span className="dashboard-destination-icon">
                   <BookOpen size={21} aria-hidden="true" />
                 </span>
                 <span className="dashboard-destination-copy">
                   <strong>Đăng nhập tài khoản</strong>
-                  <span>Mở không gian học tập hoặc quản lý của bạn.</span>
                 </span>
                 <ArrowRight size={18} aria-hidden="true" />
               </Link>
@@ -123,7 +108,7 @@ export function DashboardSection({ href = "/dashboard" }: { href?: string }) {
           </span>
           <h2>{title}</h2>
           <p>Màn hình này đang được hoàn thiện.</p>
-          <Link href="/dashboard" className="dashboard-text-link">
+          <Link href={paths.dashboard} className="dashboard-text-link">
             Về tổng quan <ArrowRight size={15} aria-hidden="true" />
           </Link>
         </section>

@@ -344,6 +344,22 @@ describe("Cookie Gateway proxy", () => {
 });
 
 describe("Route entry checks", () => {
+  it("allows anonymous catalog and course previews but protects learning content", () => {
+    for (const path of ["/dashboard/explore", "/dashboard/courses/course-1"]) {
+      expect(
+        proxy(new NextRequest(`http://frontend.test${path}`)).headers.has(
+          "location",
+        ),
+      ).toBe(false);
+    }
+    expect(
+      proxy(
+        new NextRequest(
+          "http://frontend.test/dashboard/courses/course-1/learn",
+        ),
+      ).headers.get("location"),
+    ).toContain("/login?");
+  });
   it("redirects anonymous users and remembers a safe return path", () => {
     const response = proxy(
       new NextRequest("http://frontend.test/dashboard/admin/users"),

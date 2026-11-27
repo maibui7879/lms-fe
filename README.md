@@ -76,6 +76,8 @@ NEXT_PUBLIC_API_URL=http://localhost:3000
 
 Mở `http://localhost:5173`. API URL là địa chỉ Gateway, không thêm `/api/v1` vì code đã có phần đó. Không đặt token/khóa riêng vào biến `NEXT_PUBLIC_*`.
 
+Frontend cố định cổng **5173** cho cả `npm run dev` và `npm run start` (chạy `npm run build` trước khi start). Các cổng **3000–3005** dành cho backend. Nếu 5173 đã được dùng, lệnh sẽ báo lỗi để xử lý process đang chiếm cổng, không tự chuyển sang cổng backend.
+
 Backend chạy ở repo riêng theo [Gateway README](https://github.com/maibui7879/lms-backend/blob/main/apps/api-gateway/README.md) và README từng service. Port dev: Gateway 3000, Identity 3001, Course 3002, Quiz 3003, Learning 3004, Notification 3005. Cấu hình DB/env, public key khớp Identity, `GATEWAY_ALLOWED_ORIGINS` có `http://localhost:5173`.
 
 Swagger: `http://localhost:3000/docs`; health Gateway: `http://localhost:3000/health`. Gateway chạy không có nghĩa tất cả service/DB đã chạy. Tài khoản demo và seed cần chuẩn bị cùng backend; hiện chưa có tài khoản demo được kiểm chứng trong README.
@@ -84,16 +86,17 @@ Swagger: `http://localhost:3000/docs`; health Gateway: `http://localhost:3000/he
 
 ### Đọc code frontend theo thứ tự
 
-| File/thư mục                               | Dùng để làm gì?                                              |
-| ------------------------------------------ | ------------------------------------------------------------ |
-| [package.json](./package.json)             | Thư viện đã cài và lệnh chạy                                 |
-| [src/app/](./src/app/)                     | Đường dẫn trang, layout, đang tải/lỗi/404                    |
-| [src/features/](./src/features/)           | API theo phần: auth, users, courses, learning, notifications |
-| [src/services/](./src/services/)           | Hàm màn hình sẽ gọi, ví dụ đăng nhập/lấy khóa học            |
-| [API client](./src/lib/api-client.ts)      | Gửi request, token, query và đọc lỗi                         |
-| [Types](./src/lib/types.ts)                | Kiểu dữ liệu dùng chung                                      |
-| [Auth store](./src/store/auth-store.ts)    | Phiên đăng nhập; hiện chỉ nằm trong bộ nhớ                   |
-| [useDebounce](./src/hooks/use-debounce.ts) | Chờ ngừng gõ rồi mới tìm kiếm/gửi thay đổi                   |
+| File/thư mục                               | Dùng để làm gì?                                                |
+| ------------------------------------------ | -------------------------------------------------------------- |
+| [package.json](./package.json)             | Thư viện đã cài và lệnh chạy                                   |
+| [src/app/](./src/app/)                     | Đường dẫn trang, layout, đang tải/lỗi/404                      |
+| [src/route/](./src/route/)                 | Cấu hình đường dẫn, title, icon, sidebar và role của dashboard |
+| [src/features/](./src/features/)           | API theo phần: auth, users, courses, learning, notifications   |
+| [src/services/](./src/services/)           | Hàm màn hình sẽ gọi, ví dụ đăng nhập/lấy khóa học              |
+| [API client](./src/lib/api-client.ts)      | Gửi request, token, query và đọc lỗi                           |
+| [Types](./src/lib/types.ts)                | Kiểu dữ liệu dùng chung                                        |
+| [Auth store](./src/store/auth-store.ts)    | Phiên đăng nhập; hiện chỉ nằm trong bộ nhớ                     |
+| [useDebounce](./src/hooks/use-debounce.ts) | Chờ ngừng gõ rồi mới tìm kiếm/gửi thay đổi                     |
 
 Luồng dữ liệu: **component → service → feature API → API client → Gateway → backend**.
 

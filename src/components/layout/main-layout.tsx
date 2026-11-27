@@ -2,10 +2,12 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
   Bell,
-  ChevronRight,
+  ChevronDown,
+  CircleHelp,
+  Search,
   GraduationCap,
   LogIn,
   Menu,
@@ -19,11 +21,13 @@ import { useAuthStore } from "@/store/auth-store";
 import { authService } from "@/services/auth.service";
 import {
   getDashboardNavigation,
+  getDashboardRoute,
   isNavigationActive,
   roleLabels,
-} from "./dashboard-navigation";
+  paths,
+} from "@/route";
 
-export function DashboardShell({ children }: { children: ReactNode }) {
+export function MainLayout({ children }: { children: ReactNode }) {
   const session = useAuthStore((state) => state.session);
   const loading = useAuthStore((state) => state.loading);
   const [logoutError, setLogoutError] = useState<string | null>(null);
@@ -31,22 +35,36 @@ export function DashboardShell({ children }: { children: ReactNode }) {
   const router = useRouter();
   const [collapsed, setCollapsed] = useState(false);
   const mobileMenu = useRef<HTMLDialogElement>(null);
+  const searchInput = useRef<HTMLInputElement>(null);
   const role = session?.user.role ?? null;
   const navigation = getDashboardNavigation(role);
   const roleLabel = role ? roleLabels[role] : "Khách";
   const displayName = session?.user.displayName || session?.user.email;
-  const currentPage = navigation.find((item) =>
-    isNavigationActive(pathname, item.href),
-  );
+  useEffect(() => {
+    const focusSearch = (event: KeyboardEvent) => {
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") {
+        event.preventDefault();
+        const input =
+          searchInput.current ?? document.getElementById("course-search");
+        input?.focus();
+      }
+    };
+    window.addEventListener("keydown", focusSearch);
+    return () => window.removeEventListener("keydown", focusSearch);
+  }, []);
 
   function sidebar(compact: boolean, mobile = false) {
     return (
       <>
         <div className="shell-brand-row">
           <Link
-            href="/dashboard"
+            href={session ? paths.dashboard : paths.explore}
             className="shell-brand"
-            aria-label="Lumina LMS — Tổng quan"
+            aria-label={
+              session
+                ? "Lumina LMS — Tổng quan"
+                : "Lumina LMS — Khám phá khóa học"
+            }
             onClick={() => mobileMenu.current?.close()}
           >
             <span className="shell-brand-icon">
@@ -82,14 +100,6 @@ export function DashboardShell({ children }: { children: ReactNode }) {
             </button>
           )}
         </div>
-        <div
-          className={`shell-role-scope ${compact ? "shell-role-compact" : ""}`}
-        >
-          <span className={compact ? "sr-only" : ""}>Vai trò</span>
-          <span className="shell-role-tag" title={roleLabel}>
-            {compact ? roleLabel.charAt(0) : roleLabel}
-          </span>
-        </div>
         <nav
           id={mobile ? "mobile-navigation" : "desktop-navigation"}
           aria-label={
@@ -97,15 +107,6 @@ export function DashboardShell({ children }: { children: ReactNode }) {
           }
           className="shell-navigation"
         >
-          <p className={compact ? "sr-only" : "shell-nav-heading"}>
-            {role === "ADMIN"
-              ? "Quản trị hệ thống"
-              : role === "INSTRUCTOR"
-                ? "Không gian giảng dạy"
-                : role === "STUDENT"
-                  ? "Không gian học tập"
-                  : "Khám phá"}
-          </p>
           <ul>
             {navigation.map(({ title, href, icon: Icon }) => (
               <li key={href}>
@@ -134,7 +135,7 @@ export function DashboardShell({ children }: { children: ReactNode }) {
               onClick={async () => {
                 try {
                   await authService.logout();
-                  router.replace("/login");
+                  router.replace(paths.login);
                   router.refresh();
                 } catch (error) {
                   setLogoutError(
@@ -150,7 +151,7 @@ export function DashboardShell({ children }: { children: ReactNode }) {
             </button>
           )}
           <Link
-            href={session ? "/dashboard/profile" : "/login"}
+            href={session ? paths.profile : paths.login}
             className="shell-nav-link"
             title={
               compact ? (session ? "Hồ sơ tài khoản" : "Đăng nhập") : undefined
@@ -166,11 +167,52 @@ export function DashboardShell({ children }: { children: ReactNode }) {
               {session ? "Hồ sơ tài khoản" : "Đăng nhập"}
             </span>
           </Link>
-          {!compact && (
-            <p className="shell-footer-note">Lumina LMS · Không gian học tập</p>
-          )}
         </div>
       </>
+    );
+  }
+
+  if (!session) {
+    return (
+      <div className="dashboard-shell guest-shell">
+        <a href="#dashboard-content" className="shell-skip-link">
+          Đến nội dung chính
+        </a>
+        <header className="shell-header guest-header">
+          <Link
+            href={paths.explore}
+            className="shell-brand"
+            aria-label="Lumina LMS — Khám phá khóa học"
+          >
+            <GraduationCap size={25} aria-hidden="true" />
+            <span className="shell-brand-name">
+              Lumina<span>LMS</span>
+            </span>
+          </Link>
+          <nav aria-label="Điều hướng khách" className="guest-header-nav">
+            <Link
+              href={`${paths.explore}#catalog`}
+              className="guest-courses-link"
+            >
+              Khóa học
+            </Link>
+            <Link href={paths.login} className="shell-sign-in">
+              Đăng nhập <LogIn size={16} aria-hidden="true" />
+            </Link>
+          </nav>
+        </header>
+        <main
+          id="dashboard-content"
+          tabIndex={-1}
+          className="shell-content guest-content"
+        >
+          {loading && !getDashboardRoute(pathname)?.public ? (
+            <p role="status">Đang kiểm tra phiên đăng nhập…</p>
+          ) : (
+            children
+          )}
+        </main>
+      </div>
     );
   }
 
@@ -209,27 +251,52 @@ export function DashboardShell({ children }: { children: ReactNode }) {
             >
               <Menu size={21} aria-hidden="true" />
             </button>
-            <span className="shell-breadcrumb-root">Không gian của bạn</span>
-            <ChevronRight
-              size={14}
-              className="shell-breadcrumb-separator"
-              aria-hidden="true"
-            />
-            <span className="shell-breadcrumb-current">
-              {currentPage?.title ||
-                (pathname === "/dashboard/profile"
-                  ? "Hồ sơ tài khoản"
-                  : pathname === "/dashboard/notifications"
-                    ? "Thông báo"
-                    : "Khóa học")}
-            </span>
+            <form
+              role="search"
+              aria-label="Tìm kiếm khóa học"
+              className="shell-header-search"
+              action={session ? paths.dashboard : paths.explore}
+              method="get"
+            >
+              <Search size={16} aria-hidden="true" />
+              <label htmlFor="header-course-search" className="sr-only">
+                Tìm khóa học
+              </label>
+              <input
+                ref={searchInput}
+                id="header-course-search"
+                name="search"
+                type="search"
+                placeholder="Tìm kiếm khóa học…"
+                maxLength={200}
+              />
+              <button type="submit" aria-label="Tìm khóa học">
+                <kbd>⌘ K</kbd>
+                <Search
+                  className="shell-search-submit-icon"
+                  size={15}
+                  aria-hidden="true"
+                />
+              </button>
+            </form>
           </div>
           <div className="shell-header-actions">
-            <span className="shell-header-role">{roleLabel}</span>
+            <details className="shell-help">
+              <summary aria-label="Trợ giúp">
+                <CircleHelp size={19} aria-hidden="true" />
+              </summary>
+              <div>
+                <strong>Trợ giúp</strong>
+                <p>
+                  Tìm kiếm khóa học từ thanh tìm kiếm. Đăng nhập bằng tài khoản
+                  học viên để ghi danh và theo dõi việc học.
+                </p>
+              </div>
+            </details>
             {session ? (
               <>
                 <Link
-                  href="/dashboard/notifications"
+                  href={paths.notifications}
                   className="shell-icon-button"
                   aria-label="Thông báo"
                 >
@@ -237,7 +304,7 @@ export function DashboardShell({ children }: { children: ReactNode }) {
                 </Link>
                 <span className="shell-header-divider" />
                 <Link
-                  href="/dashboard/profile"
+                  href={paths.profile}
                   className="shell-account"
                   aria-label={`Hồ sơ tài khoản ${displayName}`}
                 >
@@ -248,10 +315,11 @@ export function DashboardShell({ children }: { children: ReactNode }) {
                   <span className="shell-avatar" aria-hidden="true">
                     {displayName?.charAt(0).toUpperCase()}
                   </span>
+                  <ChevronDown size={14} aria-hidden="true" />
                 </Link>
               </>
             ) : (
-              <Link href="/login" className="shell-sign-in">
+              <Link href={paths.login} className="shell-sign-in">
                 Đăng nhập <LogIn size={15} aria-hidden="true" />
               </Link>
             )}
@@ -263,7 +331,7 @@ export function DashboardShell({ children }: { children: ReactNode }) {
               {logoutError}
             </p>
           )}
-          {loading ? (
+          {loading && !getDashboardRoute(pathname)?.public ? (
             <p role="status">Đang kiểm tra phiên đăng nhập…</p>
           ) : (
             children

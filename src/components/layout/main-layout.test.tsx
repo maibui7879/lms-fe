@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { ClientSession, UserRole } from "@/lib/types";
 import { useAuthStore } from "@/store/auth-store";
-import { DashboardShell } from "./dashboard-shell";
+import { MainLayout } from "./main-layout";
 import { DashboardSection } from "./dashboard-section";
 
 vi.mock("next/navigation", () => ({
@@ -33,12 +33,23 @@ afterEach(() => {
 });
 
 describe("Dashboard role navigation", () => {
+  it("opens the header search with Ctrl+K and searches within the signed-in dashboard", async () => {
+    signIn("STUDENT");
+    render(<MainLayout>Trang học</MainLayout>);
+    expect(
+      screen.getByRole("search", { name: "Tìm kiếm khóa học" }),
+    ).toHaveAttribute("action", "/dashboard");
+    await userEvent.setup().keyboard("{Control>}k{/Control}");
+    expect(
+      screen.getByRole("searchbox", { name: "Tìm khóa học" }),
+    ).toHaveFocus();
+  });
   it("shows a student's learning menu without teaching or administration", () => {
     signIn("STUDENT");
     render(
-      <DashboardShell>
+      <MainLayout>
         <h1>Trang học</h1>
-      </DashboardShell>,
+      </MainLayout>,
     );
     const nav = within(
       screen.getByRole("navigation", { name: "Điều hướng chính" }),
@@ -60,7 +71,7 @@ describe("Dashboard role navigation", () => {
 
   it("shows only the instructor workspace for an instructor", () => {
     signIn("INSTRUCTOR");
-    render(<DashboardShell>Trang giảng viên</DashboardShell>);
+    render(<MainLayout>Trang giảng viên</MainLayout>);
     const nav = within(
       screen.getByRole("navigation", { name: "Điều hướng chính" }),
     );
@@ -78,7 +89,7 @@ describe("Dashboard role navigation", () => {
 
   it("shows administration without student and instructor menus", () => {
     signIn("ADMIN");
-    render(<DashboardShell>Trang quản trị</DashboardShell>);
+    render(<MainLayout>Trang quản trị</MainLayout>);
     const nav = within(
       screen.getByRole("navigation", { name: "Điều hướng chính" }),
     );
@@ -97,11 +108,11 @@ describe("Dashboard role navigation", () => {
   });
 
   it("does not assign a protected role when signed out", () => {
-    render(<DashboardShell>Trang khách</DashboardShell>);
+    render(<MainLayout>Trang khách</MainLayout>);
     const nav = within(
       screen.getByRole("navigation", { name: "Điều hướng chính" }),
     );
-    expect(nav.getAllByRole("link")).toHaveLength(2);
+    expect(nav.getAllByRole("link")).toHaveLength(1);
     expect(
       nav.getByRole("link", { name: "Khám phá khóa học" }),
     ).toBeInTheDocument();
@@ -113,7 +124,7 @@ describe("Dashboard role navigation", () => {
   it("can collapse and expand the desktop sidebar without losing accessible labels", async () => {
     signIn("INSTRUCTOR");
     const user = userEvent.setup();
-    render(<DashboardShell>Trang giảng viên</DashboardShell>);
+    render(<MainLayout>Trang giảng viên</MainLayout>);
     await user.click(screen.getByRole("button", { name: "Thu gọn sidebar" }));
     expect(
       screen.getByRole("button", { name: "Mở rộng sidebar" }),

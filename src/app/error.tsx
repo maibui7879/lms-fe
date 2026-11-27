@@ -1,25 +1,24 @@
 "use client";
 
+import Link from "next/link";
+
 export default function ErrorPage({
-  error,
-  reset,
+  retry,
 }: {
   error: Error & { digest?: string };
-  reset: () => void;
+  retry: () => void;
 }) {
   return (
-    <main className="grid min-h-[50vh] place-items-center gap-4 text-center">
-      <div>
-        <h1 className="text-2xl font-semibold">Đã xảy ra lỗi</h1>
-        <p className="mt-2 text-zinc-600">{error.message}</p>
+    <main className="page-status">
+      <h1>Không thể tải trang</h1>
+      <div className="page-status-actions">
+        <button type="button" onClick={retry} className="page-status-action">
+          Thử lại
+        </button>
+        <Link className="page-status-link" href="/">
+          Về trang chủ
+        </Link>
       </div>
-      <button
-        type="button"
-        onClick={reset}
-        className="rounded-md bg-black px-4 py-2 text-white"
-      >
-        Thử lại
-      </button>
     </main>
   );
 }
