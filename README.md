@@ -28,12 +28,12 @@ Hiện frontend có khung trang và các hàm gọi API. Các thành viên tri�
 
 Điền tên người nhận trước khi bắt đầu. Giữ các tên nhánh hiện có, không cần đổi nhánh theo tên module:
 
-| Thành viên     | Nhánh                             | Công việc chính                                                                                                                               |
-| -------------- | --------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| Linh | `feat/auth/login`                 | **Identity:** đăng ký/đăng nhập, phiên, hồ sơ, yêu cầu giảng viên, Admin quản lý người dùng/role                                              |
-| Mạnh | `feat/courses/catalog-enrollment` | **Course:** danh mục, nội dung khóa/chương/bài, ghi danh, hỏi đáp, dashboard quản lý khóa, Admin duyệt khóa và thống kê ghi danh              |
-| Khánh | `feat/quizzes/quiz-player`        | **Quiz:** soạn quiz/câu hỏi, lượt làm, lưu đáp án, nộp bài, điểm/kết quả từng lượt và thống kê câu hỏi                                        |
-| Hưng | `feat/learning/progress`          | **Learning:** trang học ghép nội dung Course, tiến độ, hoàn thành, học tiếp, dashboard học tập, báo cáo tiến độ/điểm tổng hợp, CSV, chứng chỉ |
+| Thành viên | Nhánh                             | Công việc chính                                                                                                                               |
+| ---------- | --------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| Linh       | `feat/auth/login`                 | **Identity:** đăng ký/đăng nhập, phiên, hồ sơ, yêu cầu giảng viên, Admin quản lý người dùng/role                                              |
+| Mạnh       | `feat/courses/catalog-enrollment` | **Course:** danh mục, nội dung khóa/chương/bài, ghi danh, hỏi đáp, dashboard quản lý khóa, Admin duyệt khóa và thống kê ghi danh              |
+| Khánh      | `feat/quizzes/quiz-player`        | **Quiz:** soạn quiz/câu hỏi, lượt làm, lưu đáp án, nộp bài, điểm/kết quả từng lượt và thống kê câu hỏi                                        |
+| Hưng       | `feat/learning/progress`          | **Learning:** trang học ghép nội dung Course, tiến độ, hoàn thành, học tiếp, dashboard học tập, báo cáo tiến độ/điểm tổng hợp, CSV, chứng chỉ |
 
 `main` nhận phần đã kiểm tra qua pull request. Nhánh `feat/shared/gateway-api-client` đã có dành cho sửa phần gọi API chung khi cần, **không tính là người thứ năm**. TV1 làm đầu mối phần chung; thay đổi chung merge vào `main` rồi các thành viên lấy về.
 
@@ -359,7 +359,8 @@ Stage file của việc vừa làm, commit theo tính năng, push nhánh mình v
 - `npm run format` / `npm run format:check`: sửa/chỉ kiểm tra format.
 - `npm test` / `npm run test:watch`: chạy test một lần/theo dõi khi code.
 - `npm run check`: lint + format + test, chưa có build.
-- Husky kiểm tra file staged trước commit, chạy test trước push; cài dependencies sẽ bật hook. Checkout cũ cần bật lại thì chạy `npm run prepare`.
+- Husky trước commit tự chạy Prettier trên file staged, rồi kiểm tra ESLint cho code; lint-staged tự đưa phần đã format vào commit và giữ phần thay đổi chưa stage. Các bước chạy tuần tự để tránh cùng sửa một file. Trước push chỉ kiểm tra format, không tự chạy test. CI vẫn kiểm tra lint/format/test trên GitHub.
+- Cài dependencies sẽ bật hook. Checkout cũ cần bật lại thì chạy `npm run prepare`. Không đặt `HUSKY=0` khi commit/push local thông thường vì sẽ bỏ qua tự format; biến này chỉ dùng trong CI hoặc khi chủ động cần bỏ qua hook.
 - [CI hiện tại](./.github/workflows/ci.yml) chạy lint/format/test trên push/PR, chưa có build/coverage. TV1 bổ sung coverage theo phần trên.
 
 Trước gửi PR: đủ màn được giao, dùng được trên điện thoại, có loading/rỗng/lỗi, API kiểm tra quyền thật, checks pass. Ghi rõ màn chưa nối backend; không ghi hoàn thành khi mới dùng mock.

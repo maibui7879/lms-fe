@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "prepare": "husky",
-    "lint:staged": "lint-staged",
+    "lint:staged": "lint-staged --concurrent false",
     "dev": "next dev --port 5173",
     "build": "next build",
     "start": "next start --port 5173",
@@ -17,11 +17,8 @@
     "test:watch": "vitest"
   },
   "lint-staged": {
-    "*.{js,jsx,mjs,cjs,ts,tsx,mts,cts}": [
-      "eslint --fix --max-warnings=0",
-      "prettier --write"
-    ],
-    "*.{json,jsonc,css,scss,md,mdx,yml,yaml,html}": "prettier --write"
+    "*": "prettier --write --ignore-unknown",
+    "*.{js,jsx,mjs,cjs,ts,tsx,mts,cts}": "eslint --max-warnings=0"
   },
   "dependencies": {
     "@hookform/resolvers": "^7.0.9",

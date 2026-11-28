@@ -2,6 +2,8 @@ export const paths = {
   login: "/login",
   restoreSession: "/auth/restore",
   dashboard: "/dashboard",
+  instructorCourses: "/dashboard/instructor/courses",
+  newCourse: "/dashboard/instructor/courses/new",
   // Legacy URL only; the Explore page has been removed.
   explore: "/dashboard/explore",
   profile: "/dashboard/profile",
@@ -12,6 +14,7 @@ export const paths = {
 
 // Retained for existing callers; no dashboard URL is public.
 export function isPublicDashboardPath(_pathname: string) {
+  void _pathname;
   return false;
 }
 
