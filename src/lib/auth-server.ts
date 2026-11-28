@@ -16,7 +16,7 @@ export const tokenSessionSchema = z.object({
   accessToken: z.string().min(1).max(3800),
   refreshToken: z.string().min(1).max(3800),
   tokenType: z.literal("Bearer"),
-  expiresIn: z.number().int().positive().max(86400),
+  expiresIn: z.number().int().positive().max(604800),
   refreshExpiresAt: z.string().datetime(),
   user: userSchema,
 });
