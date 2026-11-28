@@ -177,7 +177,7 @@ src/features/courses/
 
 1. Login/refresh đã đọc `{ data, meta }` ở Route Handler Next.js. Token được đặt vào cookie HttpOnly; frontend chỉ nhận `{ user }`. TV1 tiếp tục đăng ký/OTP/quên mật khẩu trên nền phiên này, không đưa token trở lại store hoặc storage.
 2. Làm đăng nhập → đăng ký/OTP → quên mật khẩu. Dùng React Hook Form/Zod; hiển thị lỗi backend, khóa nút khi đang gửi. Validation theo DTO thực tế, không tự đoán độ dài mật khẩu.
-3. Phiên đã có AuthProvider khôi phục khi reload, proxy chặn truy cập khi thiếu cookie và requireUser kiểm tra user/role qua Identity ở server. Khi thêm trang riêng, gọi requireUser và kiểm tra quyền tại API backend; sidebar chỉ điều khiển hiển thị. Trang khám phá vẫn công khai.
+3. `/` chuyển đến `/login`. Toàn bộ `/dashboard/*`, kể cả danh sách và chi tiết khóa học, yêu cầu đăng nhập. Không có landing page hoặc Explore công khai. Proxy điều hướng khi thiếu cookie; layout và page xác minh phiên bằng requireUser trước khi lấy dữ liệu. Sidebar chỉ điều khiển hiển thị; backend vẫn kiểm tra quyền. Route `/login` hiện để trống, UI do người phụ trách Identity triển khai.
 4. Làm hồ sơ, yêu cầu giảng viên và Admin duyệt/đổi role/khóa tài khoản. Tự đăng ký chỉ tạo học viên. Logout phải xóa phiên/cache cả khi request backend thất bại; refresh bị từ chối thì yêu cầu login lại.
 5. Làm header/sidebar theo ảnh, menu dựa vào quyền thật, thu gọn trên điện thoại. Các nhãn Student/Admin/Teacher không được tự cấp quyền cho tài khoản.
 6. Tạo QueryClientProvider, ThemeContext và UI chung. Thống nhất props với nhóm. Thêm `usePaginatedQuery<TItem>` cho danh sách API có phân trang; giữ [useDebounce<T>](./src/hooks/use-debounce.ts) làm hook generic thứ nhất. Cả hai cần test.
@@ -200,7 +200,7 @@ src/features/courses/
 
 | Màn hình                                                                                                                                                                                      | Component cần tạo/ghép                                                    |
 | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
-| Danh mục công khai, chi tiết, ghi danh                                                                                                                                                        | CourseCard, CourseFilters, CourseDetail, EnrollButton                     |
+| Danh mục khóa học sau đăng nhập, chi tiết, ghi danh                                                                                                                                           | CourseCard, CourseFilters, CourseDetail, EnrollButton                     |
 | [Teacher Dashboard](https://www.figma.com/design/YXRuMQQZ4iqVI1RioMs2bE/Untitled?node-id=70-1817), theo ảnh nhóm gửi                                                                          | TeacherSummary, CourseStatusTabs, InstructorCourseCard, RecentDiscussions |
 | [Giảng viên quản lý khóa học](https://www.figma.com/design/YXRuMQQZ4iqVI1RioMs2bE/Untitled?node-id=70-2794)                                                                                   | InstructorCourseList, StatusBadge, Pagination                             |
 | [Tạo/sửa khóa học](https://www.figma.com/design/YXRuMQQZ4iqVI1RioMs2bE/Untitled?node-id=70-3350)                                                                                              | CourseForm, CourseSettings                                                |
@@ -210,11 +210,11 @@ src/features/courses/
 | Nội dung học dùng trong trang học TV4                                                                                                                                                         | VideoPlayer, MarkdownContent, CurriculumSidebar; TV2 làm, TV4 ghép        |
 | Admin thống kê ghi danh                                                                                                                                                                       | EnrollmentStats theo dữ liệu Course                                       |
 
-Danh mục công khai và Admin duyệt khóa học vẫn bắt buộc theo đề dù chưa có frame hoàn chỉnh. Dùng layout/component chung để làm các màn còn thiếu.
+Danh mục khóa học và Admin duyệt khóa học dùng layout/component chung. Quyết định hiện tại của dự án là yêu cầu đăng nhập để vào app; không triển khai landing page hoặc xem khóa học khi chưa đăng nhập.
 
 ### Thứ tự làm
 
-1. Catalog có tìm kiếm/lọc/phân trang. Ngừng gõ mới tìm kiếm. Tạo route công khai như `/courses`, `/courses/[courseId]` — đây là đề xuất cần tạo. Catalog phải render sẵn SSG/ISR theo đề, không chỉ tải bằng JavaScript trình duyệt.
+1. Catalog có tìm kiếm/lọc/phân trang trong dashboard sau đăng nhập. Chi tiết ở `/dashboard/courses/[courseId]` cũng yêu cầu phiên hợp lệ. Không tạo route catalog/chi tiết công khai. Nếu cache dữ liệu khóa học từ API public, vẫn xác minh phiên trước khi hiển thị trang và không cache dữ liệu cá nhân dùng chung.
 2. Làm chi tiết/ghi danh. Chưa login thì chuyển login rồi quay lại khóa học. Backend lấy người ghi danh từ JWT, không gửi userId tùy chọn từ UI.
 3. Teacher Dashboard/My Courses dùng `listInstructorCourses`. Nút thống kê sang màn TV4, nút soạn bài sang màn TV2. Dùng header/sidebar TV1, không tạo layout giống hệt lần nữa.
 4. Làm tạo/sửa khóa, rồi chương → bài → nội dung. Backend lưu **Course → Chapter → Lesson → LearningItem**; VIDEO/READING/QUIZ nằm ở LearningItem. Không gắn video trực tiếp lên Lesson vì UI gọi chung là bài.
@@ -353,7 +353,7 @@ git diff --check
 git status --short
 ```
 
-Stage file của việc vừa làm, commit theo tính năng, push nhánh mình và mở PR về main. Sửa [client](./src/lib/api-client.ts), [types](./src/lib/types.ts), [root layout](./src/app/layout.tsx), [dashboard layout](<./src/app/(dashboard)/dashboard/layout.tsx>), [package.json](./package.json) hoặc lockfile thì báo nhóm. TV2 lo course public/authoring, TV4 lo trang học; thống nhất trước khi cùng sửa course page hiện có.
+Stage file của việc vừa làm, commit theo tính năng, push nhánh mình và mở PR về main. Sửa [client](./src/lib/api-client.ts), [types](./src/lib/types.ts), [root layout](./src/app/layout.tsx), [dashboard layout](<./src/app/(dashboard)/dashboard/layout.tsx>), [package.json](./package.json) hoặc lockfile thì báo nhóm. TV2 lo danh mục, chi tiết và soạn khóa học sau đăng nhập; TV4 lo trang học. Thống nhất trước khi cùng sửa course page hiện có.
 
 - `npm run lint` / `npm run lint:fix`: kiểm tra/tự sửa lint.
 - `npm run format` / `npm run format:check`: sửa/chỉ kiểm tra format.

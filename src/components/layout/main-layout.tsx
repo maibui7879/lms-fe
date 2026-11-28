@@ -58,7 +58,7 @@ export function MainLayout({ children }: { children: ReactNode }) {
       <>
         <div className="shell-brand-row">
           <Link
-            href={session ? paths.dashboard : paths.explore}
+            href={paths.dashboard}
             className="shell-brand"
             aria-label={
               session
@@ -172,49 +172,7 @@ export function MainLayout({ children }: { children: ReactNode }) {
     );
   }
 
-  if (!session) {
-    return (
-      <div className="dashboard-shell guest-shell">
-        <a href="#dashboard-content" className="shell-skip-link">
-          Đến nội dung chính
-        </a>
-        <header className="shell-header guest-header">
-          <Link
-            href={paths.explore}
-            className="shell-brand"
-            aria-label="Lumina LMS — Khám phá khóa học"
-          >
-            <GraduationCap size={25} aria-hidden="true" />
-            <span className="shell-brand-name">
-              Lumina<span>LMS</span>
-            </span>
-          </Link>
-          <nav aria-label="Điều hướng khách" className="guest-header-nav">
-            <Link
-              href={`${paths.explore}#catalog`}
-              className="guest-courses-link"
-            >
-              Khóa học
-            </Link>
-            <Link href={paths.login} className="shell-sign-in">
-              Đăng nhập <LogIn size={16} aria-hidden="true" />
-            </Link>
-          </nav>
-        </header>
-        <main
-          id="dashboard-content"
-          tabIndex={-1}
-          className="shell-content guest-content"
-        >
-          {loading && !getDashboardRoute(pathname)?.public ? (
-            <p role="status">Đang kiểm tra phiên đăng nhập…</p>
-          ) : (
-            children
-          )}
-        </main>
-      </div>
-    );
-  }
+  if (!session) return null;
 
   return (
     <div className={`dashboard-shell ${collapsed ? "sidebar-collapsed" : ""}`}>
@@ -255,7 +213,7 @@ export function MainLayout({ children }: { children: ReactNode }) {
               role="search"
               aria-label="Tìm kiếm khóa học"
               className="shell-header-search"
-              action={session ? paths.dashboard : paths.explore}
+              action={paths.dashboard}
               method="get"
             >
               <Search size={16} aria-hidden="true" />

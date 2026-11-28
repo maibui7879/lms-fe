@@ -2,6 +2,7 @@ export const paths = {
   login: "/login",
   restoreSession: "/auth/restore",
   dashboard: "/dashboard",
+  // Legacy URL only; the Explore page has been removed.
   explore: "/dashboard/explore",
   profile: "/dashboard/profile",
   notifications: "/dashboard/notifications",
@@ -9,10 +10,9 @@ export const paths = {
     `/dashboard/courses/${encodeURIComponent(courseId)}`,
 } as const;
 
-export function isPublicDashboardPath(pathname: string) {
-  return (
-    pathname === paths.explore || /^\/dashboard\/courses\/[^/]+$/.test(pathname)
-  );
+// Retained for existing callers; no dashboard URL is public.
+export function isPublicDashboardPath(_pathname: string) {
+  return false;
 }
 
 export function loginForCourse(courseId: string) {

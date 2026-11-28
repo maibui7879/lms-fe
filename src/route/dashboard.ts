@@ -4,7 +4,6 @@ import {
   ClipboardCheck,
   GraduationCap,
   LayoutDashboard,
-  LibraryBig,
   MessageSquare,
   ShieldCheck,
   Users,
@@ -41,13 +40,6 @@ const overview: NavigationItem = {
   href: paths.dashboard,
   description: "Không gian làm việc của bạn.",
   icon: LayoutDashboard,
-};
-
-const explore: NavigationItem = {
-  title: "Khám phá khóa học",
-  href: paths.explore,
-  description: "Tìm khóa học phù hợp với mục tiêu của bạn.",
-  icon: LibraryBig,
 };
 
 const navigationByRole: Record<UserRole, NavigationItem[]> = {
@@ -151,15 +143,12 @@ for (const role of Object.keys(navigationByRole) as UserRole[]) {
       ...item,
       roles,
       sidebarRoles: roles,
-      public: item.href === paths.explore,
-      guestSidebar: item.href === paths.explore,
     });
   }
 }
 
 export const dashboardRoutes: readonly DashboardRoute[] = [
   ...sidebarRoutes.values(),
-  { ...explore, public: true, guestSidebar: true },
   {
     title: "Hồ sơ tài khoản",
     href: paths.profile,
@@ -181,7 +170,6 @@ export const overviewTitles: Record<UserRole, string> = {
 };
 
 export const courseDetailRoute: DashboardRoute = {
-  public: true,
   title: "Khóa học",
   href: "/dashboard/courses/[courseId]",
   description: "Nội dung khóa học.",
@@ -199,9 +187,7 @@ export function canAccessDashboardRoute(
   route: DashboardRoute,
   role: UserRole | null,
 ) {
-  return (
-    !!route.public || (!!role && (!route.roles || route.roles.includes(role)))
-  );
+  return !!role && (!route.roles || route.roles.includes(role));
 }
 
 export function getDashboardNavigation(

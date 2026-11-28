@@ -1,27 +1,32 @@
 # Quản lý route
 
-Next.js vẫn tạo URL từ `src/app/`. Thư mục này gom cấu hình để sidebar, tiêu đề và kiểm tra quyền dùng cùng dữ liệu.
+Next.js tạo URL từ `src/app/`. Thư mục này gom cấu hình để sidebar, tiêu đề và kiểm tra quyền dùng cùng dữ liệu.
 
-- [paths.ts](./paths.ts): đường dẫn dùng chung và hàm tạo URL có tham số, ví dụ `paths.course(courseId)`.
-- [dashboard.ts](./dashboard.ts): title, icon, mô tả, nhóm menu theo role, trang công khai và các trang không hiện trong sidebar.
-- [index.ts](./index.ts): export để component import từ `@/route`. Nếu chỉ cần URL, import `@/route/paths` để không kéo thêm icon.
+- [paths.ts](./paths.ts): URL dùng chung và hàm tạo đường dẫn khóa học.
+- [dashboard.ts](./dashboard.ts): title, icon, menu theo role và quyền truy cập.
+- [index.ts](./index.ts): export chung; chỉ cần URL thì import `@/route/paths`.
 
-Thêm một mục vào nhóm `STUDENT`, `INSTRUCTOR` hoặc `ADMIN` trong cấu hình dashboard. Sidebar và quyền server của trang catch-all tự lấy cùng cấu hình đó. Trang profile/notifications không có `sidebarRoles` nên không hiện trong sidebar, nhưng vẫn cần đăng nhập. Trang explore có `public: true` nên cho phép khách truy cập.
+## Luồng truy cập
 
-Màn hình riêng vẫn tạo `page.tsx` trong `src/app/`. Trước khi đọc dữ liệu riêng, gọi `requireUser(href, route.roles)` ở server; lấy route bằng `getDashboardRoute(href)`. Backend tiếp tục kiểm tra quyền trên dữ liệu. Chỉ khai báo route hoặc ẩn menu không tự bảo vệ một page mới.
+- `/` luôn chuyển đến `/login`. Route đăng nhập hiện để trống; thành viên Identity triển khai UI.
+- Không có landing page hoặc trang Explore. Đường dẫn Explore cũ không còn màn hình và không hiện trong menu.
+- Tất cả `/dashboard/*` yêu cầu đăng nhập, kể cả danh sách và chi tiết khóa học.
+- Proxy chuyển người thiếu access cookie đến login hoặc khôi phục phiên khi còn refresh cookie, kèm `next` để quay lại trang đang mở.
+- Dashboard layout xác minh phiên ở server. Page riêng vẫn gọi `requireUser(href, route.roles)` trước khi lấy dữ liệu để kiểm tra quyền và giữ đúng URL quay lại. Backend kiểm tra quyền trên dữ liệu.
+- AuthProvider giữ thông tin user ở client, không thay thế guard server. Không có sidebar cho khách.
+- Dashboard học viên chứa danh sách khóa học; tìm kiếm/phân trang tại `/dashboard?search=...&page=...`.
+- Backend vẫn có API public cho dữ liệu khóa học; điều đó không làm trang frontend thành công khai.
+- Không tự ghi danh sau login/đăng ký/OTP. Học viên xác nhận ghi danh bằng nút trên trang khóa học.
+
+## Thêm màn hình
+
+Thêm menu vào nhóm `STUDENT`, `INSTRUCTOR` hoặc `ADMIN` trong [dashboard.ts](./dashboard.ts). Sidebar và trang catch-all dùng cùng cấu hình role. Profile/notifications không hiện sidebar nhưng vẫn yêu cầu phiên.
+
+Màn hình riêng tạo `page.tsx` trong `src/app/`; không chỉ dựa vào việc ẩn menu để bảo vệ trang.
 
 ```tsx
-import Link from "next/link";
+import { requireUser } from "@/lib/require-user";
 import { paths } from "@/route/paths";
 
-<Link href={paths.course(course.id)}>{course.title}</Link>;
+await requireUser(paths.course(courseId));
 ```
-
-## Xem khóa học trước khi đăng nhập
-
-- `/` chuyển tới `/dashboard/explore`. Explore xác minh phiên ở server: khách được xem, người đã đăng nhập chuyển về `/dashboard`. `ExploreGuestGate` cũng chuyển hướng khi điều hướng trong ứng dụng, sau khi AuthProvider khôi phục phiên từ refresh cookie hoặc nhận phiên từ tab khác.
-- Dashboard học viên chứa cả tổng quan Learning và danh sách khóa học công khai, nên tìm kiếm/phân trang của học viên ở `/dashboard?search=...&page=...`, không đi vòng qua explore. Menu explore chỉ hiện cho khách.
-- Khách thấy menu Khám phá khóa học, được mở thông tin khóa học đã xuất bản tại `/dashboard/courses/[courseId]`. Proxy dùng `isPublicDashboardPath()` trong `paths.ts` để cho qua đúng hai loại URL này. Các URL nội dung học bên dưới không tự trở thành công khai.
-- Trang công khai chỉ gọi API danh sách/thông tin khóa học. Không gọi outline, bài học hay quiz riêng để hiển thị preview.
-- Nút ghi danh của khách dẫn tới login kèm `next` quay lại khóa học. Sau đăng nhập, học viên xác nhận ghi danh bằng nút trên trang. API backend vẫn kiểm tra xác thực và role STUDENT.
-- Giao diện đăng ký/OTP chưa triển khai. Người phụ trách Identity cần giữ tham số `next` qua các bước đăng ký, OTP và đăng nhập; không tự ghi danh khi xác minh email xong.

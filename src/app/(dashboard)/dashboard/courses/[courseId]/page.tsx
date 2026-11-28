@@ -6,6 +6,7 @@ import { courseService } from "@/services/course.service";
 import { ApiClientError } from "@/lib/api-client";
 import { EnrollButton } from "@/components/courses/enroll-button";
 import { courseDetailRoute, paths } from "@/route";
+import { requireUser } from "@/lib/require-user";
 
 export const metadata: Metadata = { title: courseDetailRoute.title };
 
@@ -15,6 +16,7 @@ async function CoursePreview({
   params: Promise<{ courseId: string }>;
 }) {
   const { courseId } = await params;
+  await requireUser(paths.course(courseId));
   const course = await courseService.getCourse(courseId).catch((error) => {
     if (error instanceof ApiClientError && error.status === 404) notFound();
     throw error;
@@ -22,7 +24,7 @@ async function CoursePreview({
   if (course.status !== "PUBLISHED") notFound();
   return (
     <article className="dashboard-page">
-      <Link href={paths.explore} className="dashboard-text-link">
+      <Link href={paths.dashboard} className="dashboard-text-link">
         ← Khám phá khóa học
       </Link>
       <header className="dashboard-page-heading">

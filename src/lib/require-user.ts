@@ -1,16 +1,13 @@
 import { cookies } from "next/headers";
-import { redirect, unstable_rethrow } from "next/navigation";
+import { redirect } from "next/navigation";
 import { REFRESH_COOKIE, safeReturnPath, serverUser } from "./auth-server";
 import type { UserRole } from "./types";
 import { paths } from "@/route/paths";
 
-/** Public discovery remains available if Identity is temporarily unavailable. */
+/** Compatibility helper: discovery now requires authentication. */
 export async function redirectAuthenticatedFromExplore() {
-  const result = await serverUser().catch((error) => {
-    unstable_rethrow(error);
-    return null;
-  });
-  if (result?.user) redirect(paths.dashboard);
+  await requireUser(paths.dashboard);
+  redirect(paths.dashboard);
 }
 
 export async function requireUser(path: string, roles?: readonly UserRole[]) {
