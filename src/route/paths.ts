@@ -2,6 +2,7 @@ export const paths = {
   login: "/login",
   restoreSession: "/auth/restore",
   dashboard: "/dashboard",
+  courses: "/dashboard/courses",
   instructorCourses: "/dashboard/instructor/courses",
   newCourse: "/dashboard/instructor/courses/new",
   // Legacy URL only; the Explore page has been removed.

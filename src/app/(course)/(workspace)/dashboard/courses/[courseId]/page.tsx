@@ -24,7 +24,7 @@ async function CoursePreview({
   if (course.status !== "PUBLISHED") notFound();
   return (
     <article className="dashboard-page">
-      <Link href={paths.dashboard} className="dashboard-text-link">
+      <Link href={paths.courses} className="dashboard-text-link">
         ← Khám phá khóa học
       </Link>
       <header className="dashboard-page-heading">

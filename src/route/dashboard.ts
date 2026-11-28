@@ -1,5 +1,6 @@
 import {
   BookOpen,
+  LibraryBig,
   ChartNoAxesCombined,
   ClipboardCheck,
   GraduationCap,
@@ -45,6 +46,12 @@ const overview: NavigationItem = {
 const navigationByRole: Record<UserRole, NavigationItem[]> = {
   STUDENT: [
     overview,
+    {
+      title: "Khám phá khóa học",
+      href: paths.courses,
+      description: "Danh sách khóa học đã xuất bản.",
+      icon: LibraryBig,
+    },
     {
       title: "Khóa học của tôi",
       href: "/dashboard/my-learning",

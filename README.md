@@ -193,7 +193,7 @@ src/features/courses/
 
 ### Cần đọc
 
-- Frontend: [course API](./src/features/courses/api.ts), [course service](./src/services/course.service.ts), [types](./src/lib/types.ts), [course page](<./src/app/(dashboard)/dashboard/courses/[courseId]/page.tsx>), [useDebounce](./src/hooks/use-debounce.ts).
+- Frontend: [course API](./src/features/courses/api.ts), [course service](./src/services/course.service.ts), [types](./src/lib/types.ts), [course page](<./src/app/(course)/(workspace)/dashboard/courses/[courseId]/page.tsx>), [useDebounce](./src/hooks/use-debounce.ts).
 - Backend: [Course README](https://github.com/maibui7879/lms-backend/blob/main/services/course-service/README.md), [Course DTO](https://github.com/maibui7879/lms-backend/blob/main/packages/contracts/src/http/course.ts), [Courses controller](https://github.com/maibui7879/lms-backend/blob/main/services/course-service/src/modules/courses/courses.controller.ts), [Enrollment controller](https://github.com/maibui7879/lms-backend/blob/main/services/course-service/src/modules/enrollments/enrollments.controller.ts), [Review controller](https://github.com/maibui7879/lms-backend/blob/main/services/course-service/src/modules/course-revisions/course-revisions.controller.ts).
 
 ### Màn hình và component
@@ -285,7 +285,7 @@ Cách ghép component Quiz:
 
 ### Cần đọc
 
-- Frontend: [dashboard](<./src/app/(dashboard)/dashboard/page.tsx>), [course page](<./src/app/(dashboard)/dashboard/courses/[courseId]/page.tsx>), [learning API](./src/features/learning/api.ts), [learning service](./src/services/learning.service.ts), [course service](./src/services/course.service.ts).
+- Frontend: [dashboard](<./src/app/(dashboard)/dashboard/page.tsx>), [course page](<./src/app/(course)/(workspace)/dashboard/courses/[courseId]/page.tsx>), [learning API](./src/features/learning/api.ts), [learning service](./src/services/learning.service.ts), [course service](./src/services/course.service.ts).
 - Backend: [Learning README](https://github.com/maibui7879/lms-backend/blob/main/services/learning-service/README.md), [Learning DTO](https://github.com/maibui7879/lms-backend/blob/main/packages/contracts/src/http/learning.ts), [Progress controller](https://github.com/maibui7879/lms-backend/blob/main/services/learning-service/src/modules/progress/progress.controller.ts), [Reports controller](https://github.com/maibui7879/lms-backend/blob/main/services/learning-service/src/modules/instructor-reports/instructor-reports.controller.ts), [Discussion controller](https://github.com/maibui7879/lms-backend/blob/main/services/course-service/src/modules/discussions/discussions.controller.ts).
 
 ### Màn hình và component
