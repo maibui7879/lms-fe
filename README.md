@@ -30,10 +30,10 @@ Hiện frontend có khung trang và các hàm gọi API. Các thành viên tri�
 
 | Thành viên     | Nhánh                             | Công việc chính                                                                                                                               |
 | -------------- | --------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| TV1 — điền tên | `feat/auth/login`                 | **Identity:** đăng ký/đăng nhập, phiên, hồ sơ, yêu cầu giảng viên, Admin quản lý người dùng/role                                              |
-| TV2 — điền tên | `feat/courses/catalog-enrollment` | **Course:** danh mục, nội dung khóa/chương/bài, ghi danh, hỏi đáp, dashboard quản lý khóa, Admin duyệt khóa và thống kê ghi danh              |
-| TV3 — điền tên | `feat/quizzes/quiz-player`        | **Quiz:** soạn quiz/câu hỏi, lượt làm, lưu đáp án, nộp bài, điểm/kết quả từng lượt và thống kê câu hỏi                                        |
-| TV4 — điền tên | `feat/learning/progress`          | **Learning:** trang học ghép nội dung Course, tiến độ, hoàn thành, học tiếp, dashboard học tập, báo cáo tiến độ/điểm tổng hợp, CSV, chứng chỉ |
+| Linh | `feat/auth/login`                 | **Identity:** đăng ký/đăng nhập, phiên, hồ sơ, yêu cầu giảng viên, Admin quản lý người dùng/role                                              |
+| Mạnh | `feat/courses/catalog-enrollment` | **Course:** danh mục, nội dung khóa/chương/bài, ghi danh, hỏi đáp, dashboard quản lý khóa, Admin duyệt khóa và thống kê ghi danh              |
+| Khánh | `feat/quizzes/quiz-player`        | **Quiz:** soạn quiz/câu hỏi, lượt làm, lưu đáp án, nộp bài, điểm/kết quả từng lượt và thống kê câu hỏi                                        |
+| Hưng | `feat/learning/progress`          | **Learning:** trang học ghép nội dung Course, tiến độ, hoàn thành, học tiếp, dashboard học tập, báo cáo tiến độ/điểm tổng hợp, CSV, chứng chỉ |
 
 `main` nhận phần đã kiểm tra qua pull request. Nhánh `feat/shared/gateway-api-client` đã có dành cho sửa phần gọi API chung khi cần, **không tính là người thứ năm**. TV1 làm đầu mối phần chung; thay đổi chung merge vào `main` rồi các thành viên lấy về.
 

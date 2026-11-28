@@ -46,18 +46,22 @@ describe("Server-side authorization", () => {
       "REDIRECT:/dashboard",
     );
   });
-  it("keeps explore public for anonymous visitors and invalid tokens", async () => {
+  it("requires login for anonymous visitors and invalid tokens on the former explore flow", async () => {
     cookieGet.mockReturnValue(undefined);
-    await expect(redirectAuthenticatedFromExplore()).resolves.toBeUndefined();
+    await expect(redirectAuthenticatedFromExplore()).rejects.toThrow(
+      "REDIRECT:/login?next=%2Fdashboard",
+    );
     expect(fetchMock).not.toHaveBeenCalled();
     cookieGet.mockReturnValue({ value: "invalid" });
     fetchMock.mockResolvedValue(new Response("{}", { status: 401 }));
-    await expect(redirectAuthenticatedFromExplore()).resolves.toBeUndefined();
+    await expect(redirectAuthenticatedFromExplore()).rejects.toThrow(
+      "REDIRECT:/login?next=%2Fdashboard",
+    );
   });
-  it("does not block public exploration during an Identity outage", async () => {
+  it("fails closed when Identity is unavailable", async () => {
     cookieGet.mockReturnValue({ value: "valid-token" });
     fetchMock.mockRejectedValue(new Error("offline"));
-    await expect(redirectAuthenticatedFromExplore()).resolves.toBeUndefined();
+    await expect(redirectAuthenticatedFromExplore()).rejects.toThrow("offline");
   });
   it("does not trust a cookie merely because it exists", async () => {
     cookieGet.mockReturnValue({ value: "forged-token" });

@@ -3,7 +3,6 @@ import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { AuthProvider, useAuth } from "./auth-provider";
-import { ExploreGuestGate } from "./explore-guest-gate";
 import { authRequest } from "@/lib/auth-client";
 import { ApiClientError } from "@/lib/api-client";
 import { useAuthStore } from "@/store/auth-store";
@@ -40,20 +39,22 @@ afterEach(() => {
 });
 
 describe("AuthProvider", () => {
-  it("redirects a session restored on explore back to dashboard", async () => {
-    window.history.replaceState({}, "", "/dashboard/explore");
+  it("redirects an expired session on course details to login with a return path", async () => {
+    window.history.replaceState({}, "", "/dashboard/courses/c1?tab=info");
     vi.mocked(authRequest).mockResolvedValueOnce(identity);
     render(
       <AuthProvider>
-        <ExploreGuestGate>
-          <Consumer />
-        </ExploreGuestGate>
+        <Consumer />
       </AuthProvider>,
     );
+    await screen.findByText(identity.user.email);
+    window.dispatchEvent(new Event("lms:unauthorized"));
     await waitFor(() =>
-      expect(router.replace).toHaveBeenCalledWith("/dashboard"),
+      expect(router.replace).toHaveBeenCalledWith(
+        "/login?next=%2Fdashboard%2Fcourses%2Fc1%3Ftab%3Dinfo",
+      ),
     );
-    expect(router.refresh).toHaveBeenCalled();
+    expect(useAuthStore.getState().session).toBeNull();
   });
   it("clears another tab on logout without restoring its cookie session", async () => {
     const channels: { onmessage: ((event: MessageEvent) => void) | null }[] =

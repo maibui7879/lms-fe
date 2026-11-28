@@ -109,13 +109,8 @@ describe("Dashboard role navigation", () => {
 
   it("does not assign a protected role when signed out", () => {
     render(<MainLayout>Trang khách</MainLayout>);
-    const nav = within(
-      screen.getByRole("navigation", { name: "Điều hướng chính" }),
-    );
-    expect(nav.getAllByRole("link")).toHaveLength(1);
-    expect(
-      nav.getByRole("link", { name: "Khám phá khóa học" }),
-    ).toBeInTheDocument();
+    expect(screen.queryByRole("navigation")).not.toBeInTheDocument();
+    expect(screen.queryByText("Trang khách")).not.toBeInTheDocument();
     expect(
       screen.queryByRole("link", { name: "Thông báo" }),
     ).not.toBeInTheDocument();

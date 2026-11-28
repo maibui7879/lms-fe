@@ -20,3 +20,47 @@ it("keeps signed-in pagination on dashboard instead of redirecting through explo
     "/dashboard?page=2&search=a%26b#catalog",
   );
 });
+
+it("validates backend filters and preserves them across pagination", () => {
+  const query = getCatalogQuery({
+    level: "BEGINNER",
+    category: "  A&B  ",
+    sort: "title",
+    direction: "asc",
+    search: " React ",
+  });
+  expect(query).toMatchObject({
+    level: "BEGINNER",
+    category: "A&B",
+    sort: "title",
+    direction: "asc",
+    search: "React",
+  });
+  const url = new URL(
+    catalogPageHref("/dashboard", query, 3),
+    "http://local.test",
+  );
+  expect(Object.fromEntries(url.searchParams)).toEqual({
+    page: "3",
+    level: "BEGINNER",
+    category: "A&B",
+    sort: "title",
+    direction: "asc",
+    search: "React",
+  });
+  expect(url.hash).toBe("#catalog");
+});
+
+it("ignores invalid filters and bounds text input", () => {
+  expect(
+    getCatalogQuery({
+      level: "ADMIN",
+      category: ["ignored"],
+      sort: "password",
+      direction: "sideways",
+    }),
+  ).toEqual({ page: 1, limit: 6 });
+  expect(
+    getCatalogQuery({ search: "a".repeat(201), category: "b".repeat(201) }),
+  ).toMatchObject({ search: "a".repeat(200), category: "b".repeat(200) });
+});

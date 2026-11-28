@@ -344,13 +344,13 @@ describe("Cookie Gateway proxy", () => {
 });
 
 describe("Route entry checks", () => {
-  it("allows anonymous catalog and course previews but protects learning content", () => {
+  it("protects catalog and course details as well as learning content", () => {
     for (const path of ["/dashboard/explore", "/dashboard/courses/course-1"]) {
       expect(
         proxy(new NextRequest(`http://frontend.test${path}`)).headers.has(
           "location",
         ),
-      ).toBe(false);
+      ).toBe(true);
     }
     expect(
       proxy(

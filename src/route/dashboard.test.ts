@@ -15,10 +15,12 @@ describe("Shared route access configuration", () => {
       expect(canAccessDashboardRoute(route, role)).toBe(false);
   });
 
-  it("keeps public explore separate from authenticated profile and overview", () => {
+  it("removes explore and requires authentication for every dashboard route", () => {
+    expect(getDashboardRoute(paths.explore)).toBeUndefined();
+    expect(getDashboardNavigation(null)).toEqual([]);
     expect(
-      canAccessDashboardRoute(getDashboardRoute(paths.explore)!, null),
-    ).toBe(true);
+      canAccessDashboardRoute(getDashboardRoute(paths.course("c1"))!, null),
+    ).toBe(false);
     expect(
       canAccessDashboardRoute(getDashboardRoute(paths.dashboard)!, null),
     ).toBe(false);
